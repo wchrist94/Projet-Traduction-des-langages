@@ -1,4 +1,4 @@
-type typ = Bool | Int | Rat | Undefined
+type typ = Bool | Int | Rat | Pointeur of typ |Undefined
 
 let string_of_type t = 
   match t with

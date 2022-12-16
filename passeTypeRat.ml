@@ -9,22 +9,25 @@ open Ast
 type t1 = Ast.AstTds.programme
 type t2 = Ast.AstType.programme
 
+
+let analyser_type_affectable a =
+
+
 (* analyser_type_expression : AstTds.expression -> AstType.expression $ typ *)
 (* Paramètre e : l'expression à analyser *)
 (* Gère le typage des expression, les transforme en AstType.expression et donne leurs type *)
 (* Erreur si type différent de celui attendu *)
 let rec analyser_type_expression e =
 	(match e with
-		|AstTds.Ident iast -> 
-			begin
-				match (info_ast_to_info iast) with
-																(* Les constantes sont des entiers *)
-																|InfoConst (_, n) -> AstType.Entier n, Int
-																(* Retourne l'AstType.Ident avec le type contenu dans l'info *)
-																|InfoVar (_, t, _, _) -> ((AstType.Ident iast),t)
-																(* Cas impossible or erreur interne *)
-																|_ -> failwith "erreur interne"
-			end
+		|AstTds.Null ->
+				AstType.Null, Undefined
+		|AstTds.New t ->
+				AstType.New t, t
+		|AstTds.Adresse iast ->
+				AstType.Adresse iast, Undefined
+		|AstTds.Affectable a ->
+				let (na, ta) = analyser_type_affectable a in
+						AstType.Affectable na , ta
 		|AstTds.Booleen b -> 
 				(* Retourne un AstType.Booleen qui est de type bool nécessairement *)
 				AstType.Booleen b, Bool
