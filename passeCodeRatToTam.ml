@@ -189,27 +189,40 @@ and analyser_code_instruction i =
                 (analyser_code_expression e)
                 ^ (call "SB" "ROut")
             |AstPlacement.Conditionnelle (e, bt, be) -> 
-                (* Etiquette du else *)
-                let ee = (getEtiquette ()) in
-                (* Etiquette de fin *)
-                let ef = (getEtiquette ()) in
-                  (* Génération du code lié à la conditionnelle *)
-                  (* Génération du code de l'expresse de la conditionnelle *)
-                  (analyser_code_expression e)
-                  (* Si condition non respectée saut à l'etiquette else *) 
-                  ^ (jumpif 0 ee)
-                  (* Génération du code du bloc true *) 
-                  ^ (analyser_code_bloc bt) 
-                  (* Saut à l'etiquette de fin pour sortir de la conditionnelle *)
-                  ^ (jump ef) 
-                  (* Etiquette du else *)
-                  ^ ee 
-                  ^ "\n"  
-                  (* Génération du code du bloc else *)
-                  ^ (analyser_code_bloc be) 
-                  (* Etiquette de fin *)
-                  ^ ef 
-                  ^ "\n"
+                begin
+                        match be with
+                            |[],0 -> 
+                                    let ef = (getEtiquette()) in 
+                                    (analyser_code_expression e)
+                                    ^ (jumpif 0 ef)
+                                    ^ (analyser_code_bloc bt)
+                                    ^ ef
+                                    ^ "\n"
+                                    
+                                |_,_ ->
+                                    (* Etiquette du else *)
+                                    let ee = (getEtiquette ()) in
+                                    (* Etiquette de fin *)
+                                    let ef = (getEtiquette ()) in
+                                    (* Génération du code lié à la conditionnelle *)
+                                    (* Génération du code de l'expresse de la conditionnelle *)
+                                    (analyser_code_expression e)
+                                    (* Si condition non respectée saut à l'etiquette else *) 
+                                    ^ (jumpif 0 ee)
+                                    (* Génération du code du bloc true *) 
+                                    ^ (analyser_code_bloc bt) 
+                                    (* Saut à l'etiquette de fin pour sortir de la conditionnelle *)
+                                    ^ (jump ef) 
+                                    (* Etiquette du else *)
+                                    ^ ee 
+                                    ^ "\n"  
+                                    (* Génération du code du bloc else *)
+                                    ^ (analyser_code_bloc be) 
+                                    (* Etiquette de fin *)
+                                    ^ ef 
+                                    ^ "\n"
+                                    
+                end
             |AstPlacement.TantQue (e, b) -> 
                 (* Etiquette de début nécessaire pour marquer un retour dans la boucle *)
                 let ed = (getEtiquette ()) in

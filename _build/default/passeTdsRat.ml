@@ -173,11 +173,11 @@ let rec analyse_tds_instruction tds oia i =
       (* Analyse de la condition *)
       let nc = analyse_tds_expression tds c in
       (* Analyse du bloc then *)
-      let tast = analyse_tds_bloc tds oia t in
+      let nbt = analyse_tds_bloc tds oia t in
       (* Analyse du bloc else *)
-      let east = analyse_tds_bloc tds oia e in
+      let nbe = analyse_tds_bloc tds oia e in
       (* Renvoie la nouvelle structure de la conditionnelle *)
-      AstTds.Conditionnelle (nc, tast, east)
+      AstTds.Conditionnelle (nc, nbt, nbe)
   | AstSyntax.TantQue (c,b) ->
       (* Analyse de la condition *)
       let nc = analyse_tds_expression tds c in

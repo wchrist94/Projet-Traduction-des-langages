@@ -93,3 +93,7 @@ let%expect_test "exemple" =
   runtam (pathFichiersRat^"testPointeur1.rat");
   [%expect{| 423 |}]
 
+let%expect_test "testifsanselse" =
+  runtam (pathFichiersRat^"testifsanselse.rat");
+  [%expect{| 0246810 |}]
+

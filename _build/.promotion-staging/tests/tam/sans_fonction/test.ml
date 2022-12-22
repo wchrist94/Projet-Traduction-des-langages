@@ -35,61 +35,65 @@ let pathFichiersRat = "../../../../../tests/tam/sans_fonction/fichiersRat/"
 
 let%expect_test "testprintint" =
   runtam (pathFichiersRat^"testprintint.rat");
-  [%expect{| Syntaxic error: asm.SyntaxicError: Error : Syntax error |}]
+  [%expect{| 42 |}]
 
 let%expect_test "testprintbool" =
   runtam (pathFichiersRat^"testprintbool.rat");
-  [%expect{| Syntaxic error: asm.SyntaxicError: Error : Syntax error |}]
+  [%expect{| true |}]
 
 let%expect_test "testprintrat" =
    runtam (pathFichiersRat^"testprintrat.rat");
-   [%expect{| Syntaxic error: asm.SyntaxicError: Error : Syntax error |}]
+   [%expect{| [4/5] |}]
 
 let%expect_test "testaddint" =
   runtam (pathFichiersRat^"testaddint.rat");
-  [%expect{| Syntaxic error: asm.SyntaxicError: Error : Syntax error |}]
+  [%expect{| 42 |}]
 
 let%expect_test "testaddrat" =
   runtam (pathFichiersRat^"testaddrat.rat");
-  [%expect{| Syntaxic error: asm.SyntaxicError: Error : Syntax error |}]
+  [%expect{| [7/6] |}]
 
 let%expect_test "testmultint" =
   runtam (pathFichiersRat^"testmultint.rat");
-  [%expect{| Syntaxic error: asm.SyntaxicError: Error : Syntax error |}]
+  [%expect{| 440 |}]
 
 let%expect_test "testmultrat" =
   runtam (pathFichiersRat^"testmultrat.rat");
-  [%expect{| Syntaxic error: asm.SyntaxicError: Error : Syntax error |}]
+  [%expect{| [14/3] |}]
 
 let%expect_test "testnum" =
   runtam (pathFichiersRat^"testnum.rat");
-  [%expect{| Syntaxic error: asm.SyntaxicError: Error : Syntax error |}]
+  [%expect{| 4 |}]
 
 let%expect_test "testdenom" =
   runtam (pathFichiersRat^"testdenom.rat");
-  [%expect{| Syntaxic error: asm.SyntaxicError: Error : Syntax error |}]
+  [%expect{| 7 |}]
 
 let%expect_test "testwhile1" =
   runtam (pathFichiersRat^"testwhile1.rat");
-  [%expect{| Syntaxic error: asm.SyntaxicError: Error : Syntax error |}]
+  [%expect{| 19 |}]
 
 let%expect_test "testif1" =
   runtam (pathFichiersRat^"testif1.rat");
-  [%expect{| Syntaxic error: asm.SyntaxicError: Error : Syntax error |}]
+  [%expect{| 18 |}]
 
 let%expect_test "testif2" =
   runtam (pathFichiersRat^"testif2.rat");
-  [%expect{| Syntaxic error: asm.SyntaxicError: Error : Syntax error |}]
+  [%expect{| 21 |}]
 
 let%expect_test "factiter" =
   runtam (pathFichiersRat^"factiter.rat");
-  [%expect{| Syntaxic error: asm.SyntaxicError: Error : Syntax error |}]
+  [%expect{| 120 |}]
 
 let%expect_test "complique" =
   runtam (pathFichiersRat^"complique.rat");
-  [%expect{| Syntaxic error: asm.SyntaxicError: Error : Syntax error |}]
+  [%expect{| [9/4][27/14][27/16][3/2] |}]
 
 let%expect_test "exemple" =
   runtam (pathFichiersRat^"testPointeur1.rat");
-  [%expect{| Syntaxic error: asm.SyntaxicError: Error : Syntax error |}]
+  [%expect{| 423 |}]
+
+let%expect_test "testifsanselse" =
+  runtam (pathFichiersRat^"testifsanselse.rat");
+  [%expect{| 0246810 |}]
 
