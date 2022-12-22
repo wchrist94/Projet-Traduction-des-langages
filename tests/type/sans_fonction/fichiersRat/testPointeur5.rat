@@ -1,0 +1,9 @@
+test {
+    int * p1 = (new int);
+    int *p2 = (new int);
+    int x = 3;
+    int y = 5;
+    p1 = &x;
+    p2 = &y;
+    p1 = p2;
+}

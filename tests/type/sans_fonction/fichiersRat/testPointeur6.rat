@@ -1,0 +1,7 @@
+test {
+    int x = 1;
+    int * p1 = (new int);
+    int ** p2 = (new int);
+    p1 = &x;
+    p2 = p1;
+}

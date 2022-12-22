@@ -1,0 +1,3 @@
+test{
+    int * p = (new rat);
+}

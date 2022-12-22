@@ -1,0 +1,7 @@
+test{
+    int * p = (new int);
+    int x = 3;
+    int y = 4;
+    rat z = [x/y];
+    *p = z;
+}
