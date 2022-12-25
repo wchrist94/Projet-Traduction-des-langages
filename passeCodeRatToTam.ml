@@ -47,6 +47,16 @@ let rec analyser_code_affectable action a =
 let rec analyser_code_expression e = 
       begin
         match e with
+            |AstType.Ternaire (e1,e2,e3) ->
+                let ef = getEtiquette() in 
+                let ee = getEtiquette() in 
+                    analyser_code_expression e1
+                    ^ (jumpif 0 ee)
+                    ^ (analyser_code_expression e2)
+                    ^ (jump ef)
+                    ^ ee ^ "\n" 
+                    ^ (analyser_code_expression e3)
+                    ^ ef ^ "\n" 
             |AstType.AppelFonction (iast, e) ->
                 begin
                     match (info_ast_to_info iast) with
@@ -151,6 +161,7 @@ let rec analyser_code_bloc (li, tailleb) =
 and analyser_code_instruction i =
     begin
         match i with
+            
             |AstPlacement.Declaration (iast, e) -> 
                 begin
                     match (info_ast_to_info iast) with

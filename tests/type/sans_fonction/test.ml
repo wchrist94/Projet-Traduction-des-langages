@@ -415,14 +415,14 @@ let%test_unit "testPointeur6"=
       in raise ErreurNonDetectee
   with
   | TypeInattendu (Pointeur Int, Pointeur Pointeur Int) -> ()
-
+(*
 let%test_unit "testPointeur7"=
   try
     let  _ = compiler (pathFichiersRat^"testPointeur7.Rat")
     in raise ErreurNonDetectee 
   with
   | PointeurNull -> ()
-
+*)
 
 (* Fichiers de tests de la génération de code -> doivent passer la TDS *)
 open Unix

@@ -37,6 +37,17 @@ let rec analyser_type_affectable a =
 (* Erreur si type différent de celui attendu *)
 let rec analyser_type_expression e =
 	(match e with
+		|AstTds.Ternaire (e1,e2,e3) ->
+			let (ne1, te1) = analyser_type_expression e1 in
+			let (ne2, te2) = analyser_type_expression e2 in
+			let (ne3, te3) = analyser_type_expression e3 in
+					if (est_compatible te1 Bool) then
+							if (est_compatible te2 te3) then
+								AstType.Ternaire(ne1,ne2,ne3), te2
+							else 
+								raise (TypeValTernaireInattendus(te2, te3))
+					else 
+							raise (TypeCondTernaireInattendus(te1,Bool))
 		|AstTds.Null ->
 				AstType.Null, Undefined
 		|AstTds.New t ->
@@ -181,6 +192,7 @@ let rec analyser_type_expression e =
 let rec analyser_type_instruction i =
 			begin
 						match i with
+									
 									|AstTds.Declaration(t, iast , e) -> 
 													(* Modfication de l'info pour y ajouter le type de la variable *)
 													modifier_type_variable t iast;

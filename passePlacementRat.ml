@@ -33,6 +33,7 @@ type t2 = Ast.AstPlacement.programme
   and analyser_placement_instruction i reg depl =
       begin
         match i with
+            
             |AstType.Declaration(iast, exp) ->
                 (* Placement en mémoire de la déclaration dans le registre reg *)
                 modifier_adresse_variable depl reg iast;

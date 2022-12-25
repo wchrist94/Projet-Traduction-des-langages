@@ -41,6 +41,11 @@ en une expression de type AstTds.expression *)
 (* Erreur si mauvaise utilisation des identifiants *)
 let rec analyse_tds_expression tds e =
       match e with
+        | AstSyntax.Ternaire (e1,e2,e3) ->
+            let ne1 = analyse_tds_expression tds e1 in 
+            let ne2 = analyse_tds_expression tds e2 in 
+            let ne3 = analyse_tds_expression tds e3 in
+                AstTds.Ternaire (ne1,ne2,ne3)
         |AstSyntax.Null ->
             AstTds.Null
         |AstSyntax.New t ->

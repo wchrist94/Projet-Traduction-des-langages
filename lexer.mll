@@ -63,7 +63,8 @@ rule token = parse
 | "<"          { INF }
 (* Modif *)
 | "&"          { AD }
-
+| ":"          { DP }
+| "?"          { TER }
 (* constantes entières *)
 | ("-")?['0'-'9']+ as i
                { ENTIER (int_of_string i) }

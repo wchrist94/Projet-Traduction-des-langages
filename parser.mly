@@ -40,6 +40,8 @@ open Ast.AstSyntax
 %token AD
 %token NULL
 %token NEW
+%token TER
+%token DP
 
 (* Type de l'attribut synthétisé des non-terminaux *)
 %type <programme> prog
@@ -102,6 +104,8 @@ e :
 | PO e1=e EQUAL e2=e PF   {Binaire (Equ,e1,e2)}
 | PO e1=e INF e2=e PF     {Binaire (Inf,e1,e2)}
 | PO exp=e PF             {exp}
+(* Modif *)
+| e1=e TER e2=e DP e3=e     {Ternaire (e1,e2,e3)}
 
 a :
 | n = ID                  {Ident n}

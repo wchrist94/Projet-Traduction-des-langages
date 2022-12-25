@@ -139,6 +139,10 @@ with
 | IdentifiantNonDeclare("x") -> ()
 
 
+let%test_unit "testelseternaire" =
+  let _ = compiler (pathFichiersRat^"testelseternaire.rat") in ()
+
+
 (* Fichiers de tests de la génération de code -> doivent passer la TDS *)
 open Unix
 open Filename

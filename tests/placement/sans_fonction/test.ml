@@ -152,3 +152,10 @@ let%test "testPointeur1_x" =
 
 let%test "testPointeur1_p" =
   test (pathFichiersRat^"testPointeur1.rat")  "main" ("p",1) (1, "SB")
+(*
+let%test "testPointeur2_x" =
+  test (pathFichiersRat^"testPointeur2.rat")  "main" ("x",1) (0, "SB")
+
+let%test "testPointeur2_p" =
+  test (pathFichiersRat^"testPointeur2.rat")  "main" ("p",0) (1, "SB")
+*)
