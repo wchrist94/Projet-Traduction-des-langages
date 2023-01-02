@@ -1,12 +1,22 @@
 main {
-    int h = 0;
+    int h = 1;
+    int k = 0;
     boucle : loop {
         if (h = 4) {
-            break boucle;
+           
         } else {
-           h = (h + 1); 
+            boucle2 : loop {
+                if (k = 3) {
+                    break boucle;
+                } else {
+                    k = (k + 1);
+                    
+                    h = (h + 1); 
+                }
+            }
         }
         
     }
     print h;
+    print k;
 }

@@ -99,5 +99,5 @@ let%expect_test "testifsanselse" =
 
 let%expect_test "testRust" =
   runtam (pathFichiersRat^"testRust.rat");
-  [%expect{| 4 |}]
+  [%expect{| 44 |}]
 

@@ -174,7 +174,7 @@ let rec analyse_tds_instruction tds oia i =
         let nli = analyse_tds_bloc tds nia li in 
             AstTds.Loop (ia, nli)
     | AstSyntax.Break (n) ->
-        begin
+        (*begin
             match oia with
                 |None ->
                     raise (BreakMalPlace n)
@@ -187,18 +187,32 @@ let rec analyse_tds_instruction tds oia i =
                             | _ ->
                                 raise (BreakMalPlace n)
                     end
-        end
+        end*)
+            let iast = chercherGlobalement tds n in 
+            begin
+                match iast with
+                    |None ->
+                        raise (BoucleInconnue n)
+                    |Some ia ->
+                        begin
+                            match (info_ast_to_info ia) with
+                                |InfoLoopNomme _ ->
+                                    AstTds.Break ia
+                                |_ ->
+                                    raise (BreakMalPlace n)
+                        end
+            end
     | AstSyntax.Continue (n) ->
+        let iast = chercherGlobalement tds n in
         begin
-            match oia with
+            match iast with
                 |None ->
-                    raise (ContinueMalPlace n)
+                    raise (BoucleInconnue n)
                 |Some ia ->
                     begin
-                        let i = info_ast_to_info ia in
-                        match i with
+                        match (info_ast_to_info ia) with
                             |InfoLoopNomme _ ->
-                                AstTds.Continue(ia)
+                                AstTds.Continue ia
                             | _ ->
                                 raise (ContinueMalPlace n)
                     end
