@@ -312,6 +312,13 @@ let rec analyser_type_instruction i =
 									|AstTds.Empty -> 
 												(* Transformation de l'AstTds.Empty en AstType.Empty *)
 												AstType.Empty
+									|AstTds.Loop (ia,b) ->
+												let nb = analyser_type_bloc b in 
+													AstType.Loop(ia,nb)
+									|AstTds.Continue ia ->
+													AstType.Continue ia
+									|AstTds.Break ia ->
+													AstType.Break ia
 			end
 
 (* analyser_type_bloc : AstTds.bloc -> AstType.bloc *)

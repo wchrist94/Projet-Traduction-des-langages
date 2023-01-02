@@ -73,6 +73,8 @@ struct
           | Fraction -> "["^(string_of_expression e1)^"/"^(string_of_expression e2)^"] "
           | _ -> (string_of_expression e1)^(string_of_binaire b)^(string_of_expression e2)^" "
         end
+    |Ternaire (e1, e2, e3) ->
+          (string_of_expression e1)^(string_of_expression e2)^(string_of_expression e3)
 
   (* Conversion des instructions *)
   let rec string_of_instruction i =
@@ -88,6 +90,9 @@ struct
     | TantQue (c,b) -> "TantQue  : TQ "^(string_of_expression c)^"\n"^
                                   "FAIRE \n"^((List.fold_right (fun i tq -> (string_of_instruction i)^tq) b ""))^"\n"
     | Retour (e) -> "Retour  : RETURN "^(string_of_expression e)^"\n"
+    | Loop (n,li) -> " Loop : " ^ n ^ "LOOP" ^ ((List.fold_right (fun i tq -> (string_of_instruction i)^tq) li ""))^"\n"
+    | Break n -> "Break : BREAK " ^ n
+    | Continue n -> " Continue : CONTINUE " ^ n
 
   (* Conversion des fonctions *)
   let string_of_fonction (Fonction(t,n,lp,li)) = (string_of_type t)^" "^n^" ("^((List.fold_right (fun (t,n) tq -> (string_of_type t)^" "^n^" "^tq) lp ""))^") = \n"^

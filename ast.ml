@@ -67,6 +67,9 @@ and instruction =
   | TantQue of expression * bloc
   (* return d'une fonction *)
   | Retour of expression
+  | Break of string
+  | Continue of string
+  | Loop of string * bloc 
   
 
 (* Structure des fonctions de Rat *)
@@ -118,7 +121,10 @@ type affectable = Deref of affectable | Ident of Tds.info_ast
     | TantQue of expression * bloc
     | Retour of expression * Tds.info_ast  (* les informations sur la fonction à laquelle est associé le retour *)
     | Empty (* les nœuds ayant disparus: Const *)
-
+    | Break of Tds.info_ast 
+    | Continue of Tds.info_ast 
+    | Loop of Tds.info_ast * bloc 
+    
 
 
   (* Structure des fonctions dans notre langage *)
@@ -174,6 +180,9 @@ type bloc = instruction list
   | TantQue of expression * bloc
   | Retour of expression * Tds.info_ast
   | Empty (* les nœuds ayant disparus: Const *)
+  | Break of Tds.info_ast
+  | Continue of Tds.info_ast 
+  | Loop of Tds.info_ast * bloc 
 
 
 (* informations associées à l'identificateur (dont son nom), liste des paramètres, corps *)
@@ -206,6 +215,9 @@ type bloc = instruction list * int (* taille du bloc *)
  | TantQue of expression * bloc
  | Retour of expression * int * int (* taille du retour et taille des paramètres *)
  | Empty (* les nœuds ayant disparus: Const *)
+ | Break of Tds.info_ast 
+ | Continue of Tds.info_ast 
+ | Loop of Tds.info_ast * bloc 
 
 
 (* informations associées à l'identificateur (dont son nom), liste de paramètres, corps, expression de retour *)

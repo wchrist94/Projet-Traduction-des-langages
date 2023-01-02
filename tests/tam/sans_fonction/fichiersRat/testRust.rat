@@ -1,0 +1,12 @@
+main {
+    int h = 0;
+    boucle : loop {
+        if (h = 4) {
+            break boucle;
+        } else {
+           h = (h + 1); 
+        }
+        
+    }
+    print h;
+}

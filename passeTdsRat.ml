@@ -28,6 +28,8 @@ let rec analyser_tds_affectable tds m a =
                                         AstTds.Ident i
                                 |InfoVar _ ->
                                     AstTds.Ident i
+                                | InfoLoopNomme (n,_,_) ->
+                                    raise (MauvaiseUtilisationIdentifiant n)
                         end
             end
         |AstSyntax.Deref ai ->
@@ -149,7 +151,59 @@ let rec analyse_tds_instruction tds oia i =
             il a donc déjà été déclaré dans le bloc courant *)
             raise (DoubleDeclaration n)
       end
-  | AstSyntax.Affectation (a,e) ->
+    | AstSyntax.Loop (n,li) ->
+        (*begin
+            match n with
+            | None -> 
+                let i = InfoLoop in
+                let ia = info_to_info_ast i in 
+                let nli = analyse_tds_bloc tds ia li in
+                    AstTds.Loop(None,nli)
+
+            | Some str ->
+                let i = InfoLoopNomme(n) in 
+                let ia = info_to_info_ast i in 
+                    ajouter tds str ia;
+                let nli = analyse_tds_bloc tds ia li in 
+                    AstTds.Loop (Some ia,nli)
+        end*)
+        let i = InfoLoopNomme(n, "", "") in
+        let ia = info_to_info_ast i in 
+            ajouter tds n ia;
+        let nia = chercherLocalement tds n in
+        let nli = analyse_tds_bloc tds nia li in 
+            AstTds.Loop (ia, nli)
+    | AstSyntax.Break (n) ->
+        begin
+            match oia with
+                |None ->
+                    raise (BreakMalPlace n)
+                |Some ia ->
+                    begin
+                        let i = info_ast_to_info ia in
+                        match i with
+                            |InfoLoopNomme _ ->
+                                AstTds.Break(ia)
+                            | _ ->
+                                raise (BreakMalPlace n)
+                    end
+        end
+    | AstSyntax.Continue (n) ->
+        begin
+            match oia with
+                |None ->
+                    raise (ContinueMalPlace n)
+                |Some ia ->
+                    begin
+                        let i = info_ast_to_info ia in
+                        match i with
+                            |InfoLoopNomme _ ->
+                                AstTds.Continue(ia)
+                            | _ ->
+                                raise (ContinueMalPlace n)
+                    end
+        end
+    | AstSyntax.Affectation (a,e) ->
         let na = analyser_tds_affectable tds true a in
         let ne = analyse_tds_expression tds e in
             AstTds.Affectation(na, ne)

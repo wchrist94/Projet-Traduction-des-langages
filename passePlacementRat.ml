@@ -77,6 +77,14 @@ type t2 = Ast.AstPlacement.programme
                         (* Erreur si retour non appelé depuis une fonction *)
                         |_ -> raise RetourDansMain  
                 end
+            |AstType.Loop (ia, b) ->
+                let nb = analyser_placement_bloc b reg depl in
+                    AstPlacement.Loop(ia, nb), 0
+            |AstType.Break ia ->
+                AstPlacement.Break ia, 0
+            |AstType.Continue ia ->
+                AstPlacement.Continue ia, 0
+
       end
 (* analyser_placement_fonction : AstType.fonction -> AstPlacement.fonction *)
 (* Paramètre : la fonction à analyser *)

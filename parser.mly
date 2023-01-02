@@ -42,6 +42,9 @@ open Ast.AstSyntax
 %token NEW
 %token TER
 %token DP
+%token LOOP
+%token BREAK
+%token CONTINUE
 
 (* Type de l'attribut synthétisé des non-terminaux *)
 %type <programme> prog
@@ -78,6 +81,15 @@ i :
 | IF exp=e li1=bloc                 {Conditionnelle (exp,li1,[])}
 | WHILE exp=e li=bloc               {TantQue (exp,li)}
 | RETURN exp=e PV                   {Retour (exp)}
+(* Modif *)
+
+| n=ID DP LOOP li=bloc              {Loop (n,li)}
+
+| BREAK n=ID PV                     {Break n}
+(*| CONTINUE PV                       {Continue None})
+| BREAK PV                          {Break None}
+| LOOP li=bloc                      {Loop (None,li)}*)
+| CONTINUE n=ID PV                  {Continue n}
 
 typ :
 | BOOL    {Bool}

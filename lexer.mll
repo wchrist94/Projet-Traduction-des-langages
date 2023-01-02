@@ -32,7 +32,10 @@
         "return",  RETURN;
         (* Modif *)
         "new",     NEW;
-        "null",    NULL
+        "null",    NULL;
+        "loop",    LOOP;
+        "break",   BREAK;
+        "continue",CONTINUE;
       ];
     fun id ->
       match Hashtbl.find_opt kws id with

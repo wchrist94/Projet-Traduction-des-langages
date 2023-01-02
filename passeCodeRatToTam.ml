@@ -11,6 +11,7 @@ open AstPlacement
 type t1 = Ast.AstPlacement.programme
 type t2 = string
 
+
 let rec analyser_code_affectable action a =
     match a with
         |AstTds.Ident iast ->
@@ -264,7 +265,33 @@ and analyser_code_instruction i =
             |AstPlacement.Empty -> 
                 (* Code vide pour un AstPlacement.Empty *)
                 " "
-    end
+            |AstPlacement.Loop (ia, b) ->
+                let db = (getEtiquette ()) in
+                let fb = (getEtiquette ()) in
+                    modifier_eti db fb ia;
+                    db
+                    ^ "\n"
+                    ^ (analyser_code_bloc b)
+                    ^ (jump db)
+                    ^ fb
+                    ^ "\n"
+            |AstPlacement.Break ia ->
+                begin
+                    match info_ast_to_info ia with
+                        |InfoLoopNomme (_,_,fb) ->
+                            jump fb
+                        | _ ->
+                            failwith "error"
+                end
+            |AstPlacement.Continue ia ->
+                begin
+                    match info_ast_to_info ia with
+                        |InfoLoopNomme (_,db,_) ->
+                            jump db
+                        | _ ->
+                            failwith "error"
+                end
+    end 
 
   (* analyser_code_fonction : fonction -> string *)
   (* Paramètre : la fonction à analyser *)

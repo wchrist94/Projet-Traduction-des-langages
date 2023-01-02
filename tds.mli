@@ -9,6 +9,8 @@ type info =
   | InfoVar of string * typ * int * string
   (* Information associée à une fonction : son nom (utile pour l'appel), son type de retour et la liste des types des paramètres *)
   | InfoFun of string * typ * typ list
+  (* Modif *)
+  | InfoLoopNomme of string * string * string
 
 (* Table des symboles *)
 type tds 
@@ -64,3 +66,5 @@ val modifier_adresse_variable : int -> string -> info_ast -> unit
 
 (* Renvoie le type si c'est une InfoVar ne fait rien sinon *)
 val getType : info_ast -> typ
+
+val modifier_eti : string -> string -> info_ast -> unit
