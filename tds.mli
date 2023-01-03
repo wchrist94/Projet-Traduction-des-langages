@@ -1,4 +1,4 @@
-open Type 
+open Type
 
 (* Définition du type des informations associées aux identifiants *)
 type info =
@@ -10,7 +10,8 @@ type info =
   (* Information associée à une fonction : son nom (utile pour l'appel), son type de retour et la liste des types des paramètres *)
   | InfoFun of string * typ * typ list
   (* Modif *)
-  | InfoLoopNomme of string * string * string
+  | InfoLoop of string * string * string
+
 
 (* Table des symboles *)
 type tds 

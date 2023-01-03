@@ -28,7 +28,7 @@ let rec analyser_tds_affectable tds m a =
                                         AstTds.Ident i
                                 |InfoVar _ ->
                                     AstTds.Ident i
-                                | InfoLoopNomme (n,_,_) ->
+                                |InfoLoop (n,_,_) ->
                                     raise (MauvaiseUtilisationIdentifiant n)
                         end
             end
@@ -115,7 +115,6 @@ let rec analyse_tds_expression tds e =
 
 
 
-
 (* analyse_tds_instruction : tds -> info_ast option -> AstSyntax.instruction -> AstTds.instruction *)
 (* Paramètre tds : la table des symboles courante *)
 (* Paramètre oia : None si l'instruction i est dans le bloc principal,
@@ -152,69 +151,118 @@ let rec analyse_tds_instruction tds oia i =
             raise (DoubleDeclaration n)
       end
     | AstSyntax.Loop (n,li) ->
-        (*begin
-            match n with
-            | None -> 
-                let i = InfoLoop in
-                let ia = info_to_info_ast i in 
-                let nli = analyse_tds_bloc tds ia li in
-                    AstTds.Loop(None,nli)
-
-            | Some str ->
-                let i = InfoLoopNomme(n) in 
-                let ia = info_to_info_ast i in 
-                    ajouter tds str ia;
-                let nli = analyse_tds_bloc tds ia li in 
-                    AstTds.Loop (Some ia,nli)
-        end*)
-        let i = InfoLoopNomme(n, "", "") in
-        let ia = info_to_info_ast i in 
-            ajouter tds n ia;
-        let nia = chercherLocalement tds n in
-        let nli = analyse_tds_bloc tds nia li in 
-            AstTds.Loop (ia, nli)
-    | AstSyntax.Break (n) ->
-        (*begin
-            match oia with
-                |None ->
-                    raise (BreakMalPlace n)
-                |Some ia ->
-                    begin
-                        let i = info_ast_to_info ia in
-                        match i with
-                            |InfoLoopNomme _ ->
-                                AstTds.Break(ia)
-                            | _ ->
-                                raise (BreakMalPlace n)
-                    end
-        end*)
-            let iast = chercherGlobalement tds n in 
-            begin
-                match iast with
-                    |None ->
-                        raise (BoucleInconnue n)
-                    |Some ia ->
-                        begin
-                            match (info_ast_to_info ia) with
-                                |InfoLoopNomme _ ->
-                                    AstTds.Break ia
-                                |_ ->
-                                    raise (BreakMalPlace n)
-                        end
-            end
-    | AstSyntax.Continue (n) ->
-        let iast = chercherGlobalement tds n in
         begin
-            match iast with
+            match n with
                 |None ->
-                    raise (BoucleInconnue n)
-                |Some ia ->
+                    let i = InfoLoop ("","","") in
+                    let ia = info_to_info_ast i in 
+                        ajouter tds "" ia;
+                    let nli = analyse_tds_bloc tds (Some ia) li in
+                        AstTds.Loop (ia, nli)
+                |Some str ->
+                    let i = InfoLoop(str, "", "") in
+                    let ia = info_to_info_ast i in 
+                        ajouter tds str ia;
+                    let nia = chercherLocalement tds str in
+                    let nli = analyse_tds_bloc tds nia li in 
+                        AstTds.Loop (ia, nli)
+        end
+    | AstSyntax.Break n ->
+        begin
+            match n with
+                |None ->
                     begin
-                        match (info_ast_to_info ia) with
-                            |InfoLoopNomme _ ->
-                                AstTds.Continue ia
-                            | _ ->
-                                raise (ContinueMalPlace n)
+                        match oia with
+                        | None -> 
+                            raise (BreakNonNommeeMalPlace)
+                        | Some i ->
+                            begin
+                                match (info_ast_to_info i) with
+                                    |InfoLoop _->
+                                        AstTds.Break i
+                                    | _ ->
+                                        raise (BreakNonNommeeMalPlace)
+                                    
+                            end
+                    end
+                |Some str ->
+                    let iast = chercherGlobalement tds str in 
+                    begin
+                        match oia with
+                            |None ->
+                                raise (BreakMalPlace str)
+                            |Some i ->
+                                begin
+                                    match (info_ast_to_info i) with
+                                        |InfoLoop _ ->
+                                            begin
+                                                match iast with
+                                                    |None ->
+                                                        raise (BoucleInconnue str)
+                                                    |Some ia ->
+                                                        begin
+                                                            match (info_ast_to_info ia) with
+                                                                |InfoLoop _ ->
+                                                                    AstTds.Break ia
+                                                                |_ ->
+                                                                    raise (BreakMalPlace str)
+                                                        end
+                                            end
+                                        | _ ->
+                                            raise (BreakMalPlace str)
+                                            
+                                end
+                                
+                        
+                    end
+        end
+    | AstSyntax.Continue (n) ->
+        begin
+            match n with
+                |None ->
+                    begin
+                        match oia with
+                        | None -> 
+                            raise (ContinueNonNommeMalPlace)
+                        | Some i ->
+                            begin
+                                match (info_ast_to_info i) with
+                                    |InfoLoop _->
+                                        AstTds.Continue i
+                                    | _ ->
+                                        raise (ContinueNonNommeMalPlace)
+                                    
+                            end
+                    end
+                |Some str ->
+                    let iast = chercherGlobalement tds str in 
+                    begin
+                        match oia with
+                            |None ->
+                                raise (ContinueMalPlace str)
+                            |Some i ->
+                                begin
+                                    match (info_ast_to_info i) with
+                                        |InfoLoop _ ->
+                                            begin
+                                                match iast with
+                                                    |None ->
+                                                        raise (BoucleInconnue str)
+                                                    |Some ia ->
+                                                        begin
+                                                            match (info_ast_to_info ia) with
+                                                                |InfoLoop _ ->
+                                                                    AstTds.Break ia
+                                                                |_ ->
+                                                                    raise (ContinueMalPlace str)
+                                                        end
+                                            end
+                                        | _ ->
+                                            raise (ContinueMalPlace str)
+                                            
+                                end
+                                
+                        
                     end
         end
     | AstSyntax.Affectation (a,e) ->

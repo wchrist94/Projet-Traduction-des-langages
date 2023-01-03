@@ -278,7 +278,7 @@ and analyser_code_instruction i =
             |AstPlacement.Break ia ->
                 begin
                     match info_ast_to_info ia with
-                        |InfoLoopNomme (_,_,fb) ->
+                        |InfoLoop (_,_,fb) ->
                             jump fb
                         | _ ->
                             failwith "error"
@@ -286,7 +286,7 @@ and analyser_code_instruction i =
             |AstPlacement.Continue ia ->
                 begin
                     match info_ast_to_info ia with
-                        |InfoLoopNomme (_,db,_) ->
+                        |InfoLoop (_,db,_) ->
                             jump db
                         | _ ->
                             failwith "error"

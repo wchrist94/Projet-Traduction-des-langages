@@ -83,13 +83,12 @@ i :
 | RETURN exp=e PV                   {Retour (exp)}
 (* Modif *)
 
-| n=ID DP LOOP li=bloc              {Loop (n,li)}
-
-| BREAK n=ID PV                     {Break n}
-(*| CONTINUE PV                       {Continue None})
+| n=ID DP LOOP li=bloc              {Loop (Some n,li)}
 | BREAK PV                          {Break None}
-| LOOP li=bloc                      {Loop (None,li)}*)
-| CONTINUE n=ID PV                  {Continue n}
+| BREAK n=ID PV                     {Break (Some n)}
+| CONTINUE PV                       {Continue None}
+| LOOP li=bloc                      {Loop (None,li)}
+| CONTINUE n=ID PV                  {Continue (Some n)}
 
 typ :
 | BOOL    {Bool}

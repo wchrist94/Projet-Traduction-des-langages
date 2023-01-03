@@ -8,6 +8,8 @@ exception MauvaiseUtilisationIdentifiant of string
 exception BreakMalPlace of string
 exception ContinueMalPlace of string
 exception BoucleInconnue of string
+exception BreakNonNommeeMalPlace
+exception ContinueNonNommeMalPlace
 
 (* Exceptions pour le typage *)
 (* Le premier type est le type réel, le second est le type attendu *)

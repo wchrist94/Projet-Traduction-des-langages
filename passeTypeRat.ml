@@ -9,25 +9,35 @@ open Ast
 type t1 = Ast.AstTds.programme
 type t2 = Ast.AstType.programme
 
+(* analyser_type_affectable : AstTds.affectable -> AstTds.affectable * typ *)
+(* Paramètre a : l'affectable à analyser *)
+(* Gère le typage des affectables, renvoie l'AstTds.affectable avec son type *)
+(* Erreur si type différent de celui attendu *)
 let rec analyser_type_affectable a = 
 		match a with 
 				|AstTds.Ident info_ast -> 
 						begin
 								match info_ast_to_info info_ast with
 										| InfoVar (_,t,_,_) -> 
+											 (* Dans le cas d'une variable, on renvoie un AstTds.Ident avec le type de la variable *)
 												AstTds.Ident info_ast,t
-										| InfoConst (_,_) ->   
+										| InfoConst (_,_) -> 
+												(* Dans le cas d'une constante, on renvoie un AstTds.Ident avec le type Entier *)
 												AstTds.Ident info_ast,Int
-										| _ ->  
+										| _ -> 
+												(* Cas impossible sauf erreur interne *)
 												failwith "erreur interne"
 						end
 				|AstTds.Deref a1 -> 
+						(* Analyse de l'affectable qui fait l'objet du déréférencement *)
 						let na,t = analyser_type_affectable a1 in
 						begin
 								match t with
 										|Pointeur nt ->  
+												(* renvoie un AstTds.Deref avec le nouvel affectable et le type du pointeur *)
 												AstTds.Deref(na),nt
 										|_ -> 
+												(* type du inattendu *)
 												raise (TypeInattendu (t,Pointeur Undefined))
 						end
 
@@ -38,32 +48,48 @@ let rec analyser_type_affectable a =
 let rec analyser_type_expression e =
 	(match e with
 		|AstTds.Ternaire (e1,e2,e3) ->
+			(* Analyse de la première expression du ternaire *)
 			let (ne1, te1) = analyser_type_expression e1 in
+			(* Analyse de la deuxième expression du ternaire *)
 			let (ne2, te2) = analyser_type_expression e2 in
+			(* Analyse de la troisième expression du ternaire *)
 			let (ne3, te3) = analyser_type_expression e3 in
+					(* La première expression doit être une condition donc de type Bool *)
 					if (est_compatible te1 Bool) then
+							(* Les deux autres expressions doivent être de même type *)
 							if (est_compatible te2 te3) then
+								(* Renvoie un AstType.Ternaire avec les trois expressions analysées et le type du ternaire *)
 								AstType.Ternaire(ne1,ne2,ne3), te2
 							else 
+								(* Dans le cas contraire, on lève une exception indiquant que les deux expressions ne sont pas
+								 de même type *)
 								raise (TypeValTernaireInattendus(te2, te3))
 					else 
+							(* Dans le cas contraire, on lève une expression indiquant que la première expression n'est pas une
+						 	condition donc de type Bool *)
 							raise (TypeCondTernaireInattendus(te1,Bool))
 		|AstTds.Null ->
+				(* Renvoie un AstType.Null avec le type Undefined *)
 				AstType.Null, Undefined
 		|AstTds.New t ->
+				(* Renvoie un AstType.New avec le type du pointeur instancié *)
 				AstType.New t, Pointeur t
 		|AstTds.Adresse iast ->
 				begin
 						match (info_ast_to_info iast) with
+								(* On vérifie qu'on cherche à accéder à une variable *)
 								|InfoVar (_, t, _, _) ->
+										(* Renvoie un AstType.Adresse avec le type du pointeur *)
 										AstType.Adresse iast, Pointeur t
+								(* Cas impossbile sauf erreur interne *)
 								| _ ->
 										failwith "erreur interne"
 				end
 		|AstTds.Affectable a ->
+				(* Analyse de l'affectable *)
 				let na,ta = analyser_type_affectable a in
+						(* Renvoie un AstType.Affectable avec l'affectable analysé et son type *)
 						AstType.Affectable na, ta
-
 		|AstTds.Booleen b -> 
 				(* Retourne un AstType.Booleen qui est de type bool nécessairement *)
 				AstType.Booleen b, Bool
@@ -206,36 +232,54 @@ let rec analyser_type_instruction i =
 															else 
 																	raise (TypeInattendu (te, t))
 									|AstTds.Affectation(a,e) -> 
+											(* Analyse de l'expression liée à l'affectation *)
 											let ne,te = analyser_type_expression e in
 											begin
 													match a with
+															(* L'objet de l'affectation est un identifiant *)
 															|AstTds.Ident iast ->
 																	begin
 																			match te with
-																				|Undefined ->
+																				|Undefined ->	
+																					(* On demande d'affecter un pointeur null à une variable, on lève donc une exception *)
 																					raise PointeurNull
 																				|_ ->
 																					begin
 																						match (info_ast_to_info iast) with
 																							|InfoVar (_, t, _, _) ->
+																									(* On vérifie que le type de l'expression à affecter et de la variable sont
+																										 identiques *)
 																									if (est_compatible te t) then
+																											(* On renvoie un AstType.Affectation contenant l'identifiant avec la
+																												 nouvelle expression *)
 																											AstType.Affectation (AstTds.Ident iast, ne)
 																									else
+																											(* Dans le cas contraire, on lève une exception indiquant que les types 
+																												 sont différents *)
 																											raise (TypeInattendu (te,t))
+																							(* Cas où on tente de faire une affectation sur autre chose qu'une variable, impossible
+																								 sauf erreur interne *)
 																							|_ -> 
 																									failwith "erreur interne"
 																					end
 																	end
+															(* L'objet de l'affectation est un déréférencement *)
 															|AstTds.Deref a1 ->
+																	(* Analyse de l'affectable associé au déréférencement *)
 																	let na,ta = analyser_type_affectable a1 in
 																			begin
 																					match ta with
 																					| Pointeur t -> 
+																							(* On vérifie que le type du pointeur correspond au type de l'expression à affecter *)
 																							if (est_compatible te t) then
+																									(* On renvoie un AstType.Affectation avec un Deref contenant la nouvelle expression *)
 																									AstType.Affectation (AstTds.Deref na, ne)
 																							else
+																									(* Dans le cas contraire, on lève une exception indiquant que les types 
+																									sont différents *)
 																									raise (TypeInattendu (te, t))
 																					| _ ->
+																							(* On demande d'affecter un pointeur null, on lève donc une exception *)
 																							raise (TypeInattendu (ta, Pointeur Undefined))
 																			end
 									
@@ -313,11 +357,15 @@ let rec analyser_type_instruction i =
 												(* Transformation de l'AstTds.Empty en AstType.Empty *)
 												AstType.Empty
 									|AstTds.Loop (ia,b) ->
+												(* Analyse du bloc de la boucle *)
 												let nb = analyser_type_bloc b in 
+													(* Renvoie un AstType.Loop avec le nouveau bloc *)
 													AstType.Loop(ia,nb)
 									|AstTds.Continue ia ->
+													(* Transforme l'AstTds.Continue en AstType.Continue *)
 													AstType.Continue ia
 									|AstTds.Break ia ->
+													(* Transforme l'AstTds.Break en AstType.Break *)
 													AstType.Break ia
 			end
 

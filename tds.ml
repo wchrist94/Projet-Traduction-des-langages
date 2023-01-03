@@ -7,7 +7,7 @@ type info =
   | InfoVar of string * typ * int * string
   | InfoFun of string * typ * typ list
   (* Modif *)
-  | InfoLoopNomme of string * string * string
+  | InfoLoop of string * string * string
 
 
 (* Données stockées dans la tds  et dans les AST : pointeur sur une information *)
@@ -287,7 +287,7 @@ let%test _ =
 let string_of_info info =
   match info with
   | InfoConst (n,value) -> "Constante "^n^" : "^(string_of_int value)
-  | InfoLoopNomme (n,_,_) -> "Boucle "^n
+  | InfoLoop (n,_,_) -> "Boucle "^n
   | InfoVar (n,t,dep,base) -> "Variable "^n^" : "^(string_of_type t)^" "^(string_of_int dep)^"["^base^"]"
   | InfoFun (n,t,tp) -> "Fonction "^n^" : "^(List.fold_right (fun elt tq -> if tq = "" then (string_of_type elt) else (string_of_type elt)^" * "^tq) tp "" )^
                       " -> "^(string_of_type t)
@@ -359,7 +359,7 @@ let%test _ =
     let modifier_eti db fb i =
       begin
           match !i with
-              |InfoLoopNomme (n,_,_) -> i:= InfoLoopNomme (n,db,fb)
+              |InfoLoop (n,_,_) -> i:= InfoLoop (n,db,fb)
               | _ -> failwith "Appel modifier_adresse_variable pas sur un InfoVar"
       end
     

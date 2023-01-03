@@ -67,9 +67,9 @@ and instruction =
   | TantQue of expression * bloc
   (* return d'une fonction *)
   | Retour of expression
-  | Break of string
-  | Continue of string
-  | Loop of string * bloc 
+  | Break of string option
+  | Continue of string option
+  | Loop of string option * bloc 
   
 
 (* Structure des fonctions de Rat *)

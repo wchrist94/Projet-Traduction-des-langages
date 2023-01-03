@@ -1,21 +1,20 @@
 main {
-    int h = 1;
     int k = 0;
-    boucle : loop {
-        if (h = 4) {
-           
-        } else {
-            boucle2 : loop {
-                if (k = 3) {
-                    break boucle;
-                } else {
-                    k = (k + 1);
-                    
-                    h = (h + 1); 
-                }
+    int h = 0;
+    
+    loop {
+        boucle : loop {
+            if (k = 3) {
+                break;
+            } else {
+                k = (k + 1);
             }
+        } 
+        if (h = 3) {
+            break;
+        } else {
+            h = (h + 1);
         }
-        
     }
     print h;
     print k;

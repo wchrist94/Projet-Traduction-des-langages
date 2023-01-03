@@ -11,23 +11,23 @@ type t2 = Ast.AstPlacement.programme
 (* analyser_placement_bloc : AstType.bloc -> string -> int -> AstPlacement.bloc *)
 (* Paramètre li : la liste des instruction à analyser *)
 (* Paramètre reg : le registre de travail *)
-(* Paramètre dep :  l'indice de départ dans le registre *)
+(* Paramètre depl :  l'indice de départ dans le registre *)
 (* Gère le placement en mémoire du bloc et transforme le bloc en un bloc de type AstPlacement.bloc *)
-  let rec analyser_placement_bloc li reg dep =
+  let rec analyser_placement_bloc li reg depl =
       match li with
           |[] -> ([], 0)
           |i::q ->                
                 (* Analyse de l'instruction en tête *)
-                let (ni, taille) = analyser_placement_instruction i reg dep in
+                let (ni, taille) = analyser_placement_instruction i reg depl in
                 (* Analyse des autres instructions de la liste *)
-                let (nq, taille_q) = analyser_placement_bloc q reg (dep + taille) in
+                let (nq, taille_q) = analyser_placement_bloc q reg (depl + taille) in
                 (* Renvoie le nouveau bloc ainsi que sa taille dans le registre *)
                 (ni::nq), taille + taille_q
   
   (* analyser_placement_instruction : AstType.instruction -> string -> int -> AstPlacement.instruction * int *)
   (* Paramètre i : l'instruction à analyser *)
   (* Paramètre reg : le registre de travail *)
-  (* Paramètre dep : l'indice de départ dans le registre *)
+  (* Paramètre depl : l'indice de départ dans le registre *)
   (* Gère le placement en mémoire d'une instruction, la transforme en AstPlacement.instruction et donne sa taille en mémoire *)
   (* Erreur si Retour utilisé dans le main *)
   and analyser_placement_instruction i reg depl =
@@ -93,17 +93,17 @@ let analyser_placement_fonction (AstType.Fonction(n,lp,b)) =
 
   (* analyse_paramètre : info_ast list -> int -> unit *)
   (* Paramètre p : le paramètre à analyser *)
-  (* Paramètre dec : le décalage d'indice dans le registre de travail *)
+  (* Paramètre depl : le décalage d'indice dans le registre de travail *)
   (* Gère le placement en mémoire d'une liste de paramètre *)
-  let rec analyse_parametre p dec =
+  let rec analyse_parametre p depl =
     match p with
       |[] -> ()
       |t::q ->
         let ty = getType t in
           (* Modifie l'adresse du paramètre en tête dans l'info *)
-          modifier_adresse_variable (dec - getTaille ty) "LB" t;
+          modifier_adresse_variable (depl - getTaille ty) "LB" t;
           (* Analyse du reste de la liste de paramètres *)
-          analyse_parametre q (dec - getTaille ty)
+          analyse_parametre q (depl - getTaille ty)
   in 
       (* Placement en mémoire des paramètre de la fonction analysée *)
       analyse_parametre (List.rev lp) 0;
