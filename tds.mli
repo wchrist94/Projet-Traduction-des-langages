@@ -73,4 +73,4 @@ val getType : info_ast -> typ
 val ajouter_etiquette : string -> string -> info_ast -> unit
 
 (* Ajoute le nom d'une boucle nommée à l'info de la boucle dans laquelle elle se situe *)
-val ajouterLoop : string -> info_ast -> unit
+val ajouterLoop : string list -> info_ast -> unit

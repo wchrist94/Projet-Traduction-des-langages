@@ -1,0 +1,9 @@
+test{
+    boucle1 :loop {
+        boucle2 : loop {
+            boucle3 : loop {
+                break boucle1;
+            }
+        }
+    }
+}

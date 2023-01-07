@@ -190,10 +190,38 @@ let rec analyse_tds_instruction tds oia i =
                     let i = InfoLoop(str, "", "", []) in
                     let ia = info_to_info_ast i in 
                         ajouter tds str ia;
+                        ajouterLoop [str] ia;
+                    (*
                         ajouterLoop str ia;
                     let nia = chercherLocalement tds str in
                     let nli = analyse_tds_bloc tds nia li in 
-                        AstTds.Loop (ia, nli)
+                             AstTds.Loop (ia, nli)
+                    *)
+
+                        
+                        begin 
+                            match oia with
+                                |None ->
+                                    let nia = chercherLocalement tds str in
+                                    let nli = analyse_tds_bloc tds nia li in 
+                                        AstTds.Loop (ia, nli)
+                                |Some i ->
+                                    begin
+                                        match (info_ast_to_info i) with
+                                            |InfoLoop (_,_,_,lb) ->
+                                                ajouterLoop lb ia;
+                                                let nia = chercherLocalement tds str in
+                                                let nli = analyse_tds_bloc tds nia li in 
+                                                     AstTds.Loop (ia, nli)
+
+                                            | _ ->
+                                                let nia = chercherLocalement tds str in
+                                                let nli = analyse_tds_bloc tds nia li in 
+                                                     AstTds.Loop (ia, nli)
+                                    end
+                        end
+                        
+                    
         end
     | AstSyntax.Break n ->
         begin

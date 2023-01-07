@@ -162,7 +162,8 @@ with
 let%test_unit "testRust4" =
   let _ = compiler (pathFichiersRat^"testRust4.rat") in ()
 
-
+let%test_unit "testRust5" =
+  let _ = compiler (pathFichiersRat^"testRust5.rat") in ()
 
 let%test_unit "testelseternaire" =
   let _ = compiler (pathFichiersRat^"testelseternaire.rat") in ()

@@ -412,5 +412,5 @@ let ajouter_etiquette db fb i =
 (* Ajoute le nom d'une boucle à une infoLoop ne fait rien sinon *)
 let ajouterLoop str i =
   match !i with
-    |InfoLoop (n,db,fb,l) -> i:= InfoLoop (n,db,fb,(List.append l [str]))
+    |InfoLoop (n,db,fb,l) -> i:= InfoLoop (n,db,fb,(List.append l str))
     | _ -> failwith "Appel ajouterLoop pas sur un InfoLoop"

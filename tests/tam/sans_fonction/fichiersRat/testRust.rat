@@ -16,13 +16,6 @@ main {
             h = (h + 1);
         }
     }
-
-    k : loop {
-        if (k = 10) {
-            break k;
-        }
-        k = (k + 1);
-    }
     print h;
     print k;
 }

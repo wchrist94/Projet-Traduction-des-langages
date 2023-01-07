@@ -1,17 +1,12 @@
 test {
-    int i = 0;
-
-
     boucle2 : loop {
         boucle : loop {
-        break;
-    }
+            break;
+        }
         boucle3 : loop {
             break boucle;
             break boucle3;
         }
         break boucle2;
     }
-
-    print i;
 }
