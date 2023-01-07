@@ -1,0 +1,7 @@
+test {
+    boucle : loop {
+        break;
+    }
+
+    (int *) p = (new int);
+}

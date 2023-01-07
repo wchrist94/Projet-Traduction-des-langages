@@ -1,0 +1,6 @@
+test{
+    boucle : loop {
+        break;
+    }
+    int boucle = 0;
+}

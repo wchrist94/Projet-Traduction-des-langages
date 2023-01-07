@@ -72,6 +72,7 @@ param : t=typ n=ID  {(t,n)}
 
 bloc : AO li=i* AF      {li}
 
+
 i :
 | t=typ n=ID EQUAL e1=e PV          {Declaration (t,n,e1)}
 | CONST n=ID EQUAL e=ENTIER PV      {Constante (n,e)}
@@ -79,8 +80,9 @@ i :
 | WHILE exp=e li=bloc               {TantQue (exp,li)}
 | RETURN exp=e PV                   {Retour (exp)}
 (* Instruction modifiée ou ajoutée pour le traitement des conditionelles sans bloc else (bloc else = [])*)
-| IF exp=e li1=bloc                 {Conditionnelle (exp,li1,[])}
-| IF exp=e li1=bloc ELSE li2=bloc   {Conditionnelle (exp,li1,li2)}
+| IF exp=e li1=bloc ELSE li2=bloc  {Conditionnelle (exp,li1,li2)}
+| IF exp=e li1=bloc                {Conditionnelle (exp,li1,[])}
+
 (* Instruction de l'affectation modifiée : à gauche de l'opérateur "=" on a un affectable désormais et une expression de
 l'autre côté *)
 | a1=a EQUAL e1=e PV                {Affectation (a1,e1)}

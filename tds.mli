@@ -37,13 +37,13 @@ val ajouter : tds -> string -> info_ast -> unit
 
 (* Recherche les informations d'un identificateur dans la tds locale *)
 (* Ne cherche que dans la tds de plus bas niveau *)
-val chercherLocalement : tds -> string -> info_ast option 
+val chercherLocalement : tds -> string -> bool -> info_ast option 
 
 (* Recherche les informations d'un identificateur dans la tds globale *)
 (* Si l'identificateur n'est pas présent dans la tds de plus bas niveau *)
 (* la recherche est effectuée dans sa table mère et ainsi de suite *)
 (* jusqu'à trouver (ou pas) l'identificateur *)
-val chercherGlobalement : tds -> string -> info_ast option 
+val chercherGlobalement : tds -> string -> bool -> info_ast option 
 
 (* Affiche la tds locale *)
 val afficher_locale : tds -> unit 

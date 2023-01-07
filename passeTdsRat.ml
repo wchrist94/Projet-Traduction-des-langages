@@ -20,7 +20,7 @@ let rec analyser_tds_affectable tds modif a =
     match a with
         |AstSyntax.Ident n ->
             begin
-                match chercherGlobalement tds n with
+                match chercherGlobalement tds n false with
                     |None -> 
                         (* L'identifiant n'a pas été retrouvé dans la tds, il n'a donc pas été déclaré on renvoie une
                         exception de type IdentifiantNonDeclare avec le nom *)
@@ -83,7 +83,7 @@ let rec analyse_tds_expression tds e =
                 AstTds.Affectable na
         |AstSyntax.Adresse n ->
             begin
-                match chercherGlobalement tds n with
+                match chercherGlobalement tds n false with
                     |None ->
                         (* Le nom de la variable dont on cherche *)
                         raise (IdentifiantNonDeclare n)
@@ -121,7 +121,7 @@ let rec analyse_tds_expression tds e =
                 AstTds.Binaire (b, ne1, ne2)
         |AstSyntax.AppelFonction (s, el) ->
             begin
-                match chercherGlobalement tds s with
+                match chercherGlobalement tds s false with
                     (* L'identifiant associé à la fonction n'a pas été trouvé dans la tds, elle n'a donc
                        pas été déclaré on renvoie une erreur avec l'identifiant de la fonction *)
                     |None ->
@@ -154,7 +154,7 @@ let rec analyse_tds_instruction tds oia i =
   match i with
   | AstSyntax.Declaration (t, n, e) ->
       begin
-        match chercherLocalement tds n with
+        match chercherLocalement tds n false with
         | None ->
             (* L'identifiant n'est pas trouvé dans la tds locale,
             il n'a donc pas été déclaré dans le bloc courant *)
@@ -202,7 +202,7 @@ let rec analyse_tds_instruction tds oia i =
                         begin 
                             match oia with
                                 |None ->
-                                    let nia = chercherLocalement tds str in
+                                    let nia = chercherLocalement tds str true in
                                     let nli = analyse_tds_bloc tds nia li in 
                                         AstTds.Loop (ia, nli)
                                 |Some i ->
@@ -210,12 +210,12 @@ let rec analyse_tds_instruction tds oia i =
                                         match (info_ast_to_info i) with
                                             |InfoLoop (_,_,_,lb) ->
                                                 ajouterLoop lb ia;
-                                                let nia = chercherLocalement tds str in
+                                                let nia = chercherLocalement tds str true in
                                                 let nli = analyse_tds_bloc tds nia li in 
                                                      AstTds.Loop (ia, nli)
 
                                             | _ ->
-                                                let nia = chercherLocalement tds str in
+                                                let nia = chercherLocalement tds str true in
                                                 let nli = analyse_tds_bloc tds nia li in 
                                                      AstTds.Loop (ia, nli)
                                     end
@@ -242,7 +242,7 @@ let rec analyse_tds_instruction tds oia i =
                             end
                     end
                 |Some str ->
-                    let iast = chercherGlobalement tds str in 
+                    let iast = chercherGlobalement tds str true in 
                     begin
                         match oia with
                             |None ->
@@ -302,7 +302,7 @@ let rec analyse_tds_instruction tds oia i =
                             end
                     end
                 |Some str ->
-                    let iast = chercherGlobalement tds str in 
+                    let iast = chercherGlobalement tds str true in 
                     begin
                         match oia with
                             |None ->
@@ -335,7 +335,7 @@ let rec analyse_tds_instruction tds oia i =
             AstTds.Affectation(na, ne)
   | AstSyntax.Constante (n,v) ->
       begin
-        match chercherLocalement tds n with
+        match chercherLocalement tds n false with
         | None ->
           (* L'identifiant n'est pas trouvé dans la tds locale,
              il n'a donc pas été déclaré dans le bloc courant *)
@@ -409,7 +409,7 @@ and analyse_tds_bloc tds oia li =
 en une fonction de type AstTds.fonction *)
 (* Erreur si mauvaise utilisation des identifiants *)
 let analyse_tds_fonction maintds (AstSyntax.Fonction(t,n,lp,li))  =
-    match (chercherLocalement maintds n) with
+    match (chercherLocalement maintds n false) with
         (* La fonction n'a pas été trouvé dans la tds locale, on peut donc effectuer
            sa déclaration *)
         | None -> 
@@ -430,7 +430,7 @@ let analyse_tds_fonction maintds (AstSyntax.Fonction(t,n,lp,li))  =
                       let infovar = InfoVar(y,Undefined,0,"") in 
                       begin
                           (* Vérification que l'info n'existe pas déjà dans la tds locale *)
-                          match chercherLocalement tdsfille y with
+                          match chercherLocalement tdsfille y false with
                             (* L'info n'a pas été trouvé dans la tds locale, on peut donc l'ajouter *)
                             | None -> 
                                 (* Transformation de l'info en info ast *)
@@ -446,7 +446,7 @@ let analyse_tds_fonction maintds (AstSyntax.Fonction(t,n,lp,li))  =
                       end
                     ) lp in
               (* Accès à l'info de la fonction contenue dans la tds principale à partir de son identifiant *)
-              let info_func = (chercherLocalement maintds n) in
+              let info_func = (chercherLocalement maintds n false) in
                 (* Renvoie un AstTds.Fonction contenant son info, la liste des paramètres contenant les infos et leurs
                    identifiants et le nouveau bloc après analyse *)
                  AstTds.Fonction (t,info_fun,nlp,(analyse_tds_bloc tdsfille info_func li))

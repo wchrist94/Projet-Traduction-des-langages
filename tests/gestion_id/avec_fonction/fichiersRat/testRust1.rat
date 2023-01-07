@@ -1,0 +1,10 @@
+int boucle (int a) {
+    return a;
+}
+
+test{
+    boucle : loop {
+        break;
+    }
+    int boucle = 0;
+}

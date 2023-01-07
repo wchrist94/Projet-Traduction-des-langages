@@ -168,6 +168,14 @@ let%test_unit "testRust5" =
 let%test_unit "testelseternaire" =
   let _ = compiler (pathFichiersRat^"testelseternaire.rat") in ()
 
+let%test_unit "testRust6" =
+  let _ = compiler (pathFichiersRat^"testRust6.rat") in ()
+
+let%test_unit "testRust7" =
+  let _ = compiler (pathFichiersRat^"testRust7.rat") in ()
+
+let%test_unit "testRust8" =
+  let _ = compiler (pathFichiersRat^"testRust8.rat") in ()
 
 (* Fichiers de tests de la génération de code -> doivent passer la TDS *)
 open Unix

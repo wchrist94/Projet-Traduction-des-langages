@@ -1,0 +1,7 @@
+test{
+    boucle : loop {
+        break;
+    }
+    const boucle = 3;
+    
+}

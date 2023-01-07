@@ -47,12 +47,12 @@ let ajouter tds nom info =
 
 (* Recherche les informations d'un identificateur dans la tds locale *)
 (* Ne cherche que dans la tds de plus bas niveau *)
-let chercherLocalement tds nom  =
+let chercherLocalement tds nom boucle =
   match tds with
   | Nulle -> None
-  | Courante (_,c) -> find_opt c nom
-    (*
-    let res =find_opt c nom in
+  | Courante (_,c) -> (* find_opt c nom *)
+    
+    let res = find_opt c nom in
     match res with
       |None -> 
         None
@@ -71,7 +71,7 @@ let chercherLocalement tds nom  =
               | _ ->
                 res
         end
-*)
+
 (*
 (* TESTS *)
 let%test _ = chercherLocalement (creerTDSMere()) "x" false = None
@@ -185,14 +185,16 @@ let%test _ =
 (* Si l'identificateur n'est pas présent dans la tds de plus bas niveau *)
 (* la recherche est effectuée dans sa table mère et ainsi de suite *)
 (* jusqu'à trouver (ou pas) l'identificateur *)
-let rec chercherGlobalement tds nom =
+let rec chercherGlobalement tds nom boucle =
   match tds with
   | Nulle -> None
   | Courante (m,c) ->
+    (*
     match find_opt c nom with
     | Some _ as i -> i
     | None -> chercherGlobalement m nom 
-    (*
+    *)
+    
     if boucle then 
       begin
         match find_opt c nom with
@@ -212,13 +214,13 @@ let rec chercherGlobalement tds nom =
             begin 
               match (info_ast_to_info ia) with
               | InfoLoop _ ->
-                i
-              | _ ->
                 chercherGlobalement m nom boucle
+              | _ ->
+                i
             end
           | None -> chercherGlobalement m nom boucle
       end
-    *)
+    
 (*
 (* TESTS *)
 
