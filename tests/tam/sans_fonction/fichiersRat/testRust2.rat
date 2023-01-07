@@ -1,0 +1,19 @@
+main {
+    int i = 0;
+
+    boucle2 : loop {
+        if (3 < i) {
+            break boucle2;
+        }
+        i = (i + 1);
+        boucle2 : loop {
+        
+            if (10 < i) {
+                break boucle2;
+            }
+            i = (i + 2);
+        }
+    }
+
+    print i;
+}

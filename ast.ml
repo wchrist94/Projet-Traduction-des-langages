@@ -41,13 +41,14 @@ type expression =
   | Binaire of binaire * expression * expression
   (* Vide (pointeur null) *)
   | Null
-  (*  *)
+  (* Un affectable *)
   | Affectable of affectable
   (* Adresse d'un pointeur *)
   | Adresse of string
   (* Création d'un pointeur *)
   | New of typ
-  (* Modif *)
+  (* Opération ternaire réprésentée par la conditionelle, la valeur de l'expression si la condition est respectée, sa valeur
+  dans le cas contraire *)
   | Ternaire of expression * expression * expression
 
 (* Instructions de Rat *)
@@ -67,8 +68,11 @@ and instruction =
   | TantQue of expression * bloc
   (* return d'une fonction *)
   | Retour of expression
+  (* Break appelé avec ou sans le nom d'une boucle *)
   | Break of string option
+  (* Continue appelé avec ou sans le nom d'une boucle *)
   | Continue of string option
+  (* Une boucle à la rust représentée par son nom éventuellement et son bloc *)
   | Loop of string option * bloc 
   
 
@@ -104,7 +108,6 @@ type affectable = Deref of affectable | Ident of Tds.info_ast
     | Null
     | Adresse of Tds.info_ast
     | New of typ
-    (* Modif *)
     | Ternaire of expression * expression * expression
   
 
@@ -121,8 +124,13 @@ type affectable = Deref of affectable | Ident of Tds.info_ast
     | TantQue of expression * bloc
     | Retour of expression * Tds.info_ast  (* les informations sur la fonction à laquelle est associé le retour *)
     | Empty (* les nœuds ayant disparus: Const *)
-    | Break of Tds.info_ast 
+    (* Le nom de la boucle appelée a été remplacé par l'info de la boucle, dans le cas où le
+    break ne comportait pas de nom on lui associe la première boucle qui vient quand on remonte les imbrications *)
+    | Break of Tds.info_ast  
+    (* Le nom de la boucle appelée a été remplacé par l'info de la boucle, dans le cas où le
+    continue ne comportait pas de nom on lui associe la première boucle qui vient quand on remonte les imbrications *)
     | Continue of Tds.info_ast 
+    (* Le nom de la boucle a été remplacé par ses informations *)
     | Loop of Tds.info_ast * bloc 
     
 
@@ -161,7 +169,6 @@ type expression =
   | New of typ
   | Null
   | Adresse of Tds.info_ast
-  (* Modif *) 
   | Ternaire of expression * expression * expression
 
   

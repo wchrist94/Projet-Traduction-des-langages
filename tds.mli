@@ -9,8 +9,9 @@ type info =
   | InfoVar of string * typ * int * string
   (* Information associée à une fonction : son nom (utile pour l'appel), son type de retour et la liste des types des paramètres *)
   | InfoFun of string * typ * typ list
-  (* Modif *)
-  | InfoLoop of string * string * string
+  (* Information associée à une boucle à la Rust : son nom ("" si boucle non nommée), son étiquette de début, son étiquette de fin
+  et la liste des noms des boucles imbriquées au sein de cette boucle *)
+  | InfoLoop of string * string * string * string list
 
 
 (* Table des symboles *)
@@ -68,4 +69,8 @@ val modifier_adresse_variable : int -> string -> info_ast -> unit
 (* Renvoie le type si c'est une InfoVar ne fait rien sinon *)
 val getType : info_ast -> typ
 
-val modifier_eti : string -> string -> info_ast -> unit
+(* Ajoute les étiquettes d'une boucle à son info *)
+val ajouter_etiquette : string -> string -> info_ast -> unit
+
+(* Ajoute le nom d'une boucle nommée à l'info de la boucle dans laquelle elle se situe *)
+val ajouterLoop : string -> info_ast -> unit

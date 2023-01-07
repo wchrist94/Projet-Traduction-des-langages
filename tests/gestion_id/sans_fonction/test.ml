@@ -138,6 +138,31 @@ let%test_unit "testPointeur3" =
 with
 | IdentifiantNonDeclare("x") -> ()
 
+let%test_unit "testRust1" =
+  try
+    let _ = compiler (pathFichiersRat^"testRust1.rat")
+  in raise ErreurNonDetectee
+with
+| BreakMalPlace("boucle") -> ()
+
+let%test_unit "testRust2" =
+  try
+    let _ = compiler (pathFichiersRat^"testRust2.rat")
+  in raise ErreurNonDetectee
+with
+| BreakNonNommeeMalPlace -> ()
+
+let%test_unit "testRust3" =
+  try
+    let _ = compiler (pathFichiersRat^"testRust3.rat")
+  in raise ErreurNonDetectee
+with
+| BreakMalPlace("boucle") -> ()
+
+let%test_unit "testRust4" =
+  let _ = compiler (pathFichiersRat^"testRust4.rat") in ()
+
+
 
 let%test_unit "testelseternaire" =
   let _ = compiler (pathFichiersRat^"testelseternaire.rat") in ()

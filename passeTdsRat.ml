@@ -7,33 +7,51 @@ open Ast
 type t1 = Ast.AstSyntax.programme
 type t2 = Ast.AstTds.programme
 
-
-
-let rec analyser_tds_affectable tds m a =
+(* analyser_tds_affectable : tds -> bool -> AstSyntax.affectable -> AstTds.affectable *)
+(* Paramètre tds : la table des symboles courante *)
+(* Paramètre m : booléen indiquant si on souhaite ou non effectuer une modification de la tds *)
+(* Paramètre a : l'affectable à anlayser *)
+(* Vérifie la bonne utilisation des identifiants et des déréférencement. Transforme l'AstSyntax.affectable 
+   en AstTds.affectable *)
+(* Renvoie une exception de type IdentifiantNonDeclare si l'Identifiant n'a pas été déclaré au préalable *)
+(* Renvoie une exception de type MauvaiseUTilisationIdentifiant si on tente d'effectuer une affectation
+   sur une fonction, une constante ou une boucle *)
+let rec analyser_tds_affectable tds modif a =
     match a with
         |AstSyntax.Ident n ->
             begin
                 match chercherGlobalement tds n with
                     |None -> 
+                        (* L'identifiant n'a pas été retrouvé dans la tds, il n'a donc pas été déclaré on renvoie une
+                        exception de type IdentifiantNonDeclare avec le nom *)
                         raise (IdentifiantNonDeclare n)
                     |Some i ->
                         begin 
                             match (info_ast_to_info i) with
                                 |InfoFun (n, _, _) -> 
+                                    (* Appel de fonction sans call, on lève une exception indquant une mauvaise utilisation
+                                    de l'identifiant *)
                                     raise (MauvaiseUtilisationIdentifiant n)
                                 |InfoConst (n, _) ->
-                                    if m then
+                                    if modif then
+                                        (* Dans le cas où on souhaite effectue une affecation sur une constante on lève une
+                                        exception indiquant une mauvaise utilisation d'identifiant *)
                                         raise (MauvaiseUtilisationIdentifiant n)
                                     else
+                                        (* Sinon on renvoie un AstTds.Ident avec son info *)
                                         AstTds.Ident i
                                 |InfoVar _ ->
+                                    (* Dans le cas d'une variable on renvoie simplement un AstTds.Ident avec l'info *)
                                     AstTds.Ident i
-                                |InfoLoop (n,_,_) ->
+                                |InfoLoop (n,_,_, _) ->
+                                    (* Identifiant d'une boucle utilisé dans un contexte autre que sa création, un break ou un
+                                    continue, on lève une exception indiquant une mauvaise utilisation d'identifiant *)
                                     raise (MauvaiseUtilisationIdentifiant n)
                         end
             end
-        |AstSyntax.Deref ai ->
-            AstTds.Deref(analyser_tds_affectable tds false ai)
+        |AstSyntax.Deref af ->
+            (* Dans le cas d'un déréférencement on anlayse l'affectable faisant l'objet du déréférencement *)
+            AstTds.Deref(analyser_tds_affectable tds false af)
 
 (* analyse_tds_expression : tds -> AstSyntax.expression -> AstTds.expression *)
 (* Paramètre tds : la table des symboles courante *)
@@ -43,30 +61,39 @@ en une expression de type AstTds.expression *)
 (* Erreur si mauvaise utilisation des identifiants *)
 let rec analyse_tds_expression tds e =
       match e with
-        | AstSyntax.Ternaire (e1,e2,e3) ->
+        | AstSyntax.Ternaire (cond,e1,e2) ->
+            (* Transformation de l'expression formant la condition pour obtenir une nouvelle expression de type
+            AstTds.expression *)
+            let ncond = analyse_tds_expression tds cond in 
+            (* Transformation des expression des valeurs possibles de l'opération pour obtenir des expression de type
+            AstTds.expression *)
             let ne1 = analyse_tds_expression tds e1 in 
-            let ne2 = analyse_tds_expression tds e2 in 
-            let ne3 = analyse_tds_expression tds e3 in
-                AstTds.Ternaire (ne1,ne2,ne3)
+            let ne2 = analyse_tds_expression tds e2 in
+                (* Renvoie un AstTds.Ternaire avec la condition et les expression analysées *)
+                AstTds.Ternaire (ncond,ne1,ne2)
         |AstSyntax.Null ->
+            (* Renvoie un AstTds.Null *)
             AstTds.Null
         |AstSyntax.New t ->
-            (New t)
+            (* Renvoie un AstTds.New avec le type *)
+            AstTds.New t
         |AstSyntax.Affectable a ->
+            (* Transformation de l'affectable en AstTds.affectable *)
             let na = analyser_tds_affectable tds false a in
                 AstTds.Affectable na
-        |AstSyntax.Adresse str ->
+        |AstSyntax.Adresse n ->
             begin
-                match chercherGlobalement tds str with
+                match chercherGlobalement tds n with
                     |None ->
-                        raise (IdentifiantNonDeclare str)
+                        (* Le nom de la variable dont on cherche *)
+                        raise (IdentifiantNonDeclare n)
                     |Some t ->
                         begin
                             match (info_ast_to_info t)  with
                                 |InfoVar _ ->
                                     AstTds.Adresse t
                                 |_ ->
-                                    raise (MauvaiseUtilisationIdentifiant str)
+                                    raise (MauvaiseUtilisationIdentifiant n)
                         end
             end
         |AstSyntax.Booleen b ->
@@ -154,15 +181,16 @@ let rec analyse_tds_instruction tds oia i =
         begin
             match n with
                 |None ->
-                    let i = InfoLoop ("","","") in
+                    let i = InfoLoop ("","","", []) in
                     let ia = info_to_info_ast i in 
                         ajouter tds "" ia;
                     let nli = analyse_tds_bloc tds (Some ia) li in
                         AstTds.Loop (ia, nli)
                 |Some str ->
-                    let i = InfoLoop(str, "", "") in
+                    let i = InfoLoop(str, "", "", []) in
                     let ia = info_to_info_ast i in 
                         ajouter tds str ia;
+                        ajouterLoop str ia;
                     let nia = chercherLocalement tds str in
                     let nli = analyse_tds_bloc tds nia li in 
                         AstTds.Loop (ia, nli)
@@ -194,7 +222,7 @@ let rec analyse_tds_instruction tds oia i =
                             |Some i ->
                                 begin
                                     match (info_ast_to_info i) with
-                                        |InfoLoop _ ->
+                                        |InfoLoop (_,_,_, l) ->
                                             begin
                                                 match iast with
                                                     |None ->
@@ -202,8 +230,19 @@ let rec analyse_tds_instruction tds oia i =
                                                     |Some ia ->
                                                         begin
                                                             match (info_ast_to_info ia) with
-                                                                |InfoLoop _ ->
-                                                                    AstTds.Break ia
+                                                                |InfoLoop (str,_,_,_) ->
+                                                                    (*let infoLocale = chercherLocalement tds str in 
+                                                                        begin
+                                                                            match infoLocale with
+                                                                            | None -> 
+                                                                                raise (BreakMalPlace str)
+                                                                            | Some _ ->*)
+                                                                            if (List.mem str l) then
+                                                                                AstTds.Break ia
+                                                                            else
+                                                                                raise (BreakMalPlace str)
+                                                                        (*end*)
+                                                                    
                                                                 |_ ->
                                                                     raise (BreakMalPlace str)
                                                         end
@@ -258,11 +297,8 @@ let rec analyse_tds_instruction tds oia i =
                                                         end
                                             end
                                         | _ ->
-                                            raise (ContinueMalPlace str)
-                                            
+                                            raise (ContinueMalPlace str)                       
                                 end
-                                
-                        
                     end
         end
     | AstSyntax.Affectation (a,e) ->

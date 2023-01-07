@@ -36,12 +36,14 @@ open Ast.AstSyntax
 %token MULT
 %token INF
 %token EOF
-(* Modif *)
+(* Token des pointeurs *)
 %token AD
 %token NULL
 %token NEW
+(* Token de l'opérateur ternaire *)
 %token TER
 %token DP
+(* Token des boucles *)
 %token LOOP
 %token BREAK
 %token CONTINUE
@@ -72,39 +74,36 @@ bloc : AO li=i* AF      {li}
 
 i :
 | t=typ n=ID EQUAL e1=e PV          {Declaration (t,n,e1)}
-(* Modif *)
-| a1=a EQUAL e1=e PV                {Affectation (a1,e1)}
 | CONST n=ID EQUAL e=ENTIER PV      {Constante (n,e)}
 | PRINT e1=e PV                     {Affichage (e1)}
-| IF exp=e li1=bloc ELSE li2=bloc   {Conditionnelle (exp,li1,li2)}
-(* Modif *)
-| IF exp=e li1=bloc                 {Conditionnelle (exp,li1,[])}
 | WHILE exp=e li=bloc               {TantQue (exp,li)}
 | RETURN exp=e PV                   {Retour (exp)}
-(* Modif *)
-
+(* Instruction modifiée ou ajoutée pour le traitement des conditionelles sans bloc else (bloc else = [])*)
+| IF exp=e li1=bloc                 {Conditionnelle (exp,li1,[])}
+| IF exp=e li1=bloc ELSE li2=bloc   {Conditionnelle (exp,li1,li2)}
+(* Instruction de l'affectation modifiée : à gauche de l'opérateur "=" on a un affectable désormais et une expression de
+l'autre côté *)
+| a1=a EQUAL e1=e PV                {Affectation (a1,e1)}
+(* Instructions ajoutées pour traiter les boucles nommées et non nommées (le nom de la boucle est remplacé par None dans le cas
+d'une boucle non nommée) *)
+| LOOP li=bloc                      {Loop (None,li)}
 | n=ID DP LOOP li=bloc              {Loop (Some n,li)}
 | BREAK PV                          {Break None}
 | BREAK n=ID PV                     {Break (Some n)}
 | CONTINUE PV                       {Continue None}
-| LOOP li=bloc                      {Loop (None,li)}
 | CONTINUE n=ID PV                  {Continue (Some n)}
 
 typ :
 | BOOL    {Bool}
 | INT     {Int}
 | RAT     {Rat}
-(* Modif *)
-| t = typ MULT {Pointeur t}
+(* type Pointeur (par ex (int * ) ou int * ) *)
+| PO t = typ MULT PF {Pointeur t}
+| t = typ MULT {Pointeur t} 
 
 e : 
 | CALL n=ID PO lp=e* PF   {AppelFonction (n,lp)}
 | CO e1=e SLASH e2=e CF   {Binaire(Fraction,e1,e2)}
-(* Modif *)
-| a1 = a                  {Affectable a1}
-| NEW t=typ               {New t}
-| NULL                    {Null}
-| AD adr = ID             {Adresse adr}
 | TRUE                    {Booleen true}
 | FALSE                   {Booleen false}
 | e=ENTIER                {Entier e}
@@ -115,10 +114,18 @@ e :
 | PO e1=e EQUAL e2=e PF   {Binaire (Equ,e1,e2)}
 | PO e1=e INF e2=e PF     {Binaire (Inf,e1,e2)}
 | PO exp=e PF             {exp}
-(* Modif *)
+(* Expression des pointeurs *)
+| a1 = a                  {Affectable a1}
+| NEW t=typ               {New t}
+| NULL                    {Null}
+| AD adr = ID             {Adresse adr}
+(* Expression de l'opérateur Ternaire *)
 | e1=e TER e2=e DP e3=e     {Ternaire (e1,e2,e3)}
 
 a :
-| n = ID                  {Ident n}
-| MULT a1 = a             {Deref a1}
+(* L'identifiant qui a le même comportement que celui de la version avant implémentation du système affectable/non affectable *)
+| n = ID                       {Ident n}
+(* Pointeur considéré avec ou sans paranthèses *)
+| PO MULT a1 = a PF            {Deref a1}
+| MULT a1 = a                  {Deref a1}
 

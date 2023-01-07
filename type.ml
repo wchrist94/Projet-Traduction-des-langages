@@ -1,5 +1,5 @@
-type typ = Bool | Int | Rat | Pointeur of typ |Undefined
-(* Modif *)
+type typ = Bool | Int | Rat | Pointeur of typ |Undefined (* Ajout du type Pointeur *)
+
 let rec string_of_type t = 
   match t with
   | Bool ->  "Bool"
@@ -14,7 +14,7 @@ let rec est_compatible t1 t2 =
   | Bool, Bool -> true
   | Int, Int -> true
   | Rat, Rat -> true
-  (* Modif *)
+  (* Adaptation de la fonction pour traiter les pointeurs *)
   | (Pointeur tp1), (Pointeur tp2) -> est_compatible tp1 tp2
   | _ -> false 
 

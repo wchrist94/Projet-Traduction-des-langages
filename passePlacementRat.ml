@@ -78,7 +78,9 @@ type t2 = Ast.AstPlacement.programme
                         |_ -> raise RetourDansMain  
                 end
             |AstType.Loop (ia, b) ->
+                (* Analyse du placement du bloc de la boucle *)
                 let nb = analyser_placement_bloc b reg depl in
+                    (* Renvoie un AstPlacement.Loop avec le bloc analysé *)
                     AstPlacement.Loop(ia, nb), 0
             |AstType.Break ia ->
                 AstPlacement.Break ia, 0

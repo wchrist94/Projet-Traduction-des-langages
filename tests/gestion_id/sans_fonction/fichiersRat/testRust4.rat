@@ -1,0 +1,7 @@
+test{
+    int x = 4;
+
+    x : loop {
+        break;
+    }
+}

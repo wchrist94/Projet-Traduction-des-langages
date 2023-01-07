@@ -30,9 +30,10 @@
         "true",    TRUE;
         "false",   FALSE;
         "return",  RETURN;
-        (* Modif *)
+        (* Reconnaissance des élément de la partie pointeur *)
         "new",     NEW;
         "null",    NULL;
+        (* Reconnaissance des élément de la partie boucle à la Rust *)
         "loop",    LOOP;
         "break",   BREAK;
         "continue",CONTINUE;
@@ -64,10 +65,11 @@ rule token = parse
 | "+"          { PLUS }
 | "*"          { MULT }
 | "<"          { INF }
-(* Modif *)
-| "&"          { AD }
+(* Caractère nécessaire pour construire l'opérateur ternaire *)
 | ":"          { DP }
 | "?"          { TER }
+(* Caractère permettant de reconnaître une adresse *)
+| "&"          { AD }
 (* constantes entières *)
 | ("-")?['0'-'9']+ as i
                { ENTIER (int_of_string i) }
