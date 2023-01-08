@@ -72,7 +72,6 @@ param : t=typ n=ID  {(t,n)}
 
 bloc : AO li=i* AF      {li}
 
-
 i :
 | t=typ n=ID EQUAL e1=e PV          {Declaration (t,n,e1)}
 | CONST n=ID EQUAL e=ENTIER PV      {Constante (n,e)}
@@ -101,7 +100,7 @@ typ :
 | RAT     {Rat}
 (* type Pointeur (par ex (int * ) ou int * ) *)
 | PO t = typ MULT PF {Pointeur t}
-| t = typ MULT {Pointeur t} 
+| t = typ MULT       {Pointeur t} 
 
 e : 
 | CALL n=ID PO lp=e* PF   {AppelFonction (n,lp)}
@@ -117,12 +116,12 @@ e :
 | PO e1=e INF e2=e PF     {Binaire (Inf,e1,e2)}
 | PO exp=e PF             {exp}
 (* Expression des pointeurs *)
-| a1 = a                  {Affectable a1}
-| NEW t=typ               {New t}
+| a1 = a             {Affectable a1}
+| PO NEW t=typ PF          {New t}
 | NULL                    {Null}
 | AD adr = ID             {Adresse adr}
 (* Expression de l'opérateur Ternaire *)
-| e1=e TER e2=e DP e3=e     {Ternaire (e1,e2,e3)}
+| PO e1=e TER e2=e DP e3=e PF    {Ternaire (e1,e2,e3)}
 
 a :
 (* L'identifiant qui a le même comportement que celui de la version avant implémentation du système affectable/non affectable *)
