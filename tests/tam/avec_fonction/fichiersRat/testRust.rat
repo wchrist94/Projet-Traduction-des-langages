@@ -1,0 +1,10 @@
+int a (bool p) {
+    return (1);
+}
+
+main{
+    a : loop {
+        break;
+    }
+    print (call a(true));
+}

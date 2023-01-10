@@ -74,3 +74,8 @@ let%expect_test "testSujet" =
   [%expect{| 01010101018880101010101 |}]
 
 
+let%expect_test "testRust" =
+  runtam (pathFichiersRat^"testRust.rat");
+  [%expect{| 01010101018880101010101 |}]
+
+

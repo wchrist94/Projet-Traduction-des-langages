@@ -184,8 +184,26 @@ let rec analyse_tds_instruction tds oia i =
                     let i = InfoLoop ("","","", []) in
                     let ia = info_to_info_ast i in 
                         ajouter tds "" ia;
-                    let nli = analyse_tds_bloc tds (Some ia) li in
-                        AstTds.Loop (ia, nli)
+                        ajouterLoop [""] ia;
+                    begin
+                        match oia with
+                        | None -> 
+                            let nli = analyse_tds_bloc tds (Some ia) li in
+                            AstTds.Loop (ia, nli)
+                        | Some i ->
+                            begin
+                                match (info_ast_to_info i) with
+                                |InfoLoop (_,_,_,lb) ->
+                                    ajouterLoop lb ia;
+                                    let nli = analyse_tds_bloc tds (Some ia) li in 
+                                         AstTds.Loop (ia, nli)
+
+                                | _ ->
+                                    let nli = analyse_tds_bloc tds (Some ia) li in 
+                                         AstTds.Loop (ia, nli)
+                            end
+
+                    end
                 |Some str ->
                     let i = InfoLoop(str, "", "", []) in
                     let ia = info_to_info_ast i in 

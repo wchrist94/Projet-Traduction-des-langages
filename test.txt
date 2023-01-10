@@ -1,4 +1,4 @@
-; tests/tam/avec_fonction/fichiersRat/testSujet.rat
+; tests/tam/sans_fonction/fichiersRat/testRust3.rat
 JUMP main
 
 pgcd
@@ -70,120 +70,48 @@ SUBR IMul
 CALL (ST) norm
 RETURN (2) 4
 
-valeur
-LOAD (1) -3[LB]
-JUMPIF (0) label8
-LOAD (1) -2[LB]
-JUMP label7
-label8
-LOAD (1) -1[LB]
-label7
-RETURN (1) 3
-HALT
-permute
-PUSH 1
-LOAD (1) -2[LB]
-LOADI (1)
-STORE (1) 3[LB]
-LOAD (1) -1[LB]
-LOADI (1)
-
-LOAD (1) -2[LB]
-STOREI (1)
-LOAD (1) 3[LB]
-
-LOAD (1) -1[LB]
-STOREI (1)
-LOADL 0
-RETURN (1) 2
-HALT
 main
 PUSH 1
 LOADL 0
 STORE (1) 0[SB]
-PUSH 1
-LOADL 1
-STORE (1) 1[SB]
-PUSH 1
-LOADL 0
-STORE (1) 2[SB]
-PUSH 1
-LOADL 1
-STORE (1) 3[SB]
 label1
 PUSH 1
-LOAD (1) 3[SB]
-LOADA 0[SB]
-LOADA 1[SB]
-CALL (SB) valeur
-STORE (1) 4[SB]
-LOAD (1) 4[SB]
-LOADI (1)
-SUBR IOut
-LOAD (1) 3[SB]
 LOADL 0
+STORE (1) 1[SB]
+label3
+LOAD (1) 1[SB]
+LOADL 60
 SUBR IEq
-
-STORE (1) 3[SB]
-LOAD (1) 2[SB]
+JUMPIF (0) label5
+JUMP label4
+POP (0) 0
+label5
+LOAD (1) 0[SB]
+LOADL 24
+SUBR IEq
+JUMPIF (0) label6
+JUMP label2
+POP (0) 0
+label6
+LOAD (1) 0[SB]
+SUBR IOut
+LOAD (1) 1[SB]
+SUBR IOut
+LOAD (1) 1[SB]
 LOADL 1
 SUBR IAdd
 
-STORE (1) 2[SB]
-LOAD (1) 2[SB]
-LOADL 10
-SUBR IEq
-JUMPIF (0) label3
-JUMP label2
+STORE (1) 1[SB]
 POP (0) 0
-label3
+JUMP label3
+label4
+LOAD (1) 0[SB]
+LOADL 1
+SUBR IAdd
+
+STORE (1) 0[SB]
 POP (0) 1
 JUMP label1
 label2
-LOADL 888
-SUBR IOut
-PUSH 1
-LOADL 1
-SUBR MAlloc
-STORE (1) 4[SB]
-LOADL 0
-
-LOAD (1) 4[SB]
-STOREI (1)
-PUSH 1
-LOADL 1
-SUBR MAlloc
-STORE (1) 5[SB]
-LOADL 1
-
-LOAD (1) 5[SB]
-STOREI (1)
-PUSH 1
-LOADL 0
-STORE (1) 6[SB]
-label4
-LOAD (1) 4[SB]
-LOADI (1)
-SUBR IOut
-PUSH 1
-LOAD (1) 4[SB]
-LOAD (1) 5[SB]
-CALL (SB) permute
-STORE (1) 7[SB]
-LOAD (1) 6[SB]
-LOADL 1
-SUBR IAdd
-
-STORE (1) 6[SB]
-LOAD (1) 6[SB]
-LOADL 10
-SUBR IEq
-JUMPIF (0) label6
-JUMP label5
-POP (0) 0
-label6
 POP (0) 1
-JUMP label4
-label5
-POP (0) 7
 HALT
