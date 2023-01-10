@@ -1,5 +1,5 @@
 test{
     int x = 10;
     int * p = (new int);
-    * p = x;
+    (* p) = x;
 }

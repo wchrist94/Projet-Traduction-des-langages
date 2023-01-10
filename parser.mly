@@ -117,7 +117,7 @@ e :
 | PO exp=e PF             {exp}
 (* Expression des pointeurs *)
 | a1 = a             {Affectable a1}
-| PO NEW t=typ PF          {New t}
+| PO NEW t=typ PF         {New t}
 | NULL                    {Null}
 | AD adr = ID             {Adresse adr}
 (* Expression de l'opérateur Ternaire *)
@@ -128,5 +128,5 @@ a :
 | n = ID                       {Ident n}
 (* Pointeur considéré avec ou sans paranthèses *)
 | PO MULT a1 = a PF            {Deref a1}
-| MULT a1 = a                  {Deref a1}
+
 
