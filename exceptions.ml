@@ -19,6 +19,8 @@ exception TypeBinaireInattendu of binaire * typ * typ (* les types sont les type
 exception PointeurNull
 exception TypeCondTernaireInattendus of typ * typ
 exception TypeValTernaireInattendus of typ * typ
+exception PasUnPointeur of string
+exception OperationInapropriee of string
 
 (* Utilisation illégale de return dans le programme principal *)
 exception RetourDansMain

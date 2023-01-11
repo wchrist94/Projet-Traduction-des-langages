@@ -177,6 +177,16 @@ let%test_unit "testRust7" =
 let%test_unit "testRust8" =
   let _ = compiler (pathFichiersRat^"testRust8.rat") in ()
 
+let%test_unit "testRust9" =
+  try
+    let _ = compiler (pathFichiersRat^"testRust9.rat")
+  in raise ErreurNonDetectee
+with
+| IdentifiantNonDeclare("a") -> ()
+
+let%test_unit "testRust10" =
+  let _ = compiler (pathFichiersRat^"testRust10.rat") in ()
+
 (* Fichiers de tests de la génération de code -> doivent passer la TDS *)
 open Unix
 open Filename

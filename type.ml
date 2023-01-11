@@ -16,6 +16,7 @@ let rec est_compatible t1 t2 =
   | Rat, Rat -> true
   (* Adaptation de la fonction pour traiter les pointeurs *)
   | (Pointeur tp1), (Pointeur tp2) -> est_compatible tp1 tp2
+  | Undefined, Undefined -> true
   | _ -> false 
 
 let%test _ = est_compatible Bool Bool
@@ -59,5 +60,12 @@ let getTaille t =
 let%test _ = getTaille Int = 1
 let%test _ = getTaille Bool = 1
 let%test _ = getTaille Rat = 2
+
+let detection_Pointeur_non_Pointeur t te =
+  if ((est_compatible t Int || est_compatible t Bool || est_compatible t Rat) && (est_compatible te (Pointeur Rat) 
+    || est_compatible te (Pointeur Int) || est_compatible te (Pointeur Bool)))  then
+      true
+  else
+    false
 
 

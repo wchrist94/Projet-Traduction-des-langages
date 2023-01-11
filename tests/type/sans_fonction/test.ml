@@ -415,14 +415,48 @@ let%test_unit "testPointeur6"=
       in raise ErreurNonDetectee
   with
   | TypeInattendu (Pointeur Int, Pointeur Pointeur Int) -> ()
-(*
+
 let%test_unit "testPointeur7"=
   try
     let  _ = compiler (pathFichiersRat^"testPointeur7.Rat")
     in raise ErreurNonDetectee 
   with
   | PointeurNull -> ()
-*)
+
+  let%test_unit "testPointeur8"=
+  try
+    let  _ = compiler (pathFichiersRat^"testPointeur8.Rat")
+    in raise ErreurNonDetectee 
+  with
+  | PasUnPointeur "x" -> ()
+
+  let%test_unit "testPointeur9"=
+  try
+    let  _ = compiler (pathFichiersRat^"testPointeur9.Rat")
+    in raise ErreurNonDetectee 
+  with
+  | OperationInapropriee "null sur un non pointeur" -> ()
+
+  let%test_unit "testPointeur10"=
+  try
+    let  _ = compiler (pathFichiersRat^"testPointeur10.Rat")
+    in raise ErreurNonDetectee 
+  with
+  | OperationInapropriee "null sur un non pointeur" -> ()
+
+  let%test_unit "testPointeur11"=
+  try
+    let  _ = compiler (pathFichiersRat^"testPointeur11.Rat")
+    in raise ErreurNonDetectee 
+  with
+  | PasUnPointeur "x" -> ()
+
+  let%test_unit "testPointeur12"=
+  try
+    let  _ = compiler (pathFichiersRat^"testPointeur12.Rat")
+    in raise ErreurNonDetectee 
+  with
+  | PasUnPointeur "x" -> ()
 
 (* Fichiers de tests de la génération de code -> doivent passer la TDS *)
 open Unix

@@ -229,8 +229,20 @@ let rec analyser_type_instruction i =
 																	(* Renvoie un AstType.Declaration contenant l'info et la nouvelle expression *)
 																	AstType.Declaration(iast, ne)
 															(* Si le type de l'expression n'est pas conforme on renvoie une erreur indiquant le type attendu *)
-															else 
-																	raise (TypeInattendu (te, t))
+															else (* Commentaire *)
+																	if (detection_Pointeur_non_Pointeur t te) then
+																		match (info_ast_to_info iast) with
+																		| InfoVar (n,_,_,_) ->
+																				raise (PasUnPointeur n)
+																		| InfoConst (n,_) ->
+																				raise (PasUnPointeur n)
+																		| _ ->
+																				failwith "Déclaration inapproprié d'une boucle ou d'une fonction"
+																	else
+																		if ((est_compatible te Undefined) && (est_compatible t Int || est_compatible t Rat)) then
+																				raise (OperationInapropriee "null sur un non pointeur")
+																		else
+																			raise (TypeInattendu (te, t))
 									|AstTds.Affectation(a,e) -> 
 											(* Analyse de l'expression liée à l'affectation *)
 											let ne,te = analyser_type_expression e in
@@ -239,30 +251,35 @@ let rec analyser_type_instruction i =
 															(* L'objet de l'affectation est un identifiant *)
 															|AstTds.Ident iast ->
 																	begin
-																			match te with
-																				|Undefined ->	
-																					(* On demande d'affecter un pointeur null à une variable, on lève donc une exception *)
-																					raise PointeurNull
-																				|_ ->
-																					begin
-																						match (info_ast_to_info iast) with
-																							|InfoVar (_, t, _, _) ->
-																									(* On vérifie que le type de l'expression à affecter et de la variable sont
-																										 identiques *)
-																									if (est_compatible te t) then
-																											(* On renvoie un AstType.Affectation contenant l'identifiant avec la
-																												 nouvelle expression *)
-																											AstType.Affectation (AstTds.Ident iast, ne)
-																									else
-																											(* Dans le cas contraire, on lève une exception indiquant que les types 
-																												 sont différents *)
-																											raise (TypeInattendu (te,t))
+																			match (info_ast_to_info iast) with
+																					|InfoVar (n, t, _, _) ->
+																							begin
+																									match te with
+																											|Undefined ->	
+																													(* Commentaire *)
+																													(* On demande d'affecter un pointeur null à une variable, on lève donc une exception *)
+																													raise (OperationInapropriee "null sur un non pointeur")
+																											|_ ->
+																													(* On vérifie que le type de l'expression à affecter et de la variable sont
+																													 identiques *)
+																													if (est_compatible te t) then
+																															(* On renvoie un AstType.Affectation contenant l'identifiant avec la
+																															nouvelle expression *)
+																															AstType.Affectation (AstTds.Ident iast, ne)
+																													else
+																															if (detection_Pointeur_non_Pointeur t te) then
+																																	raise (PasUnPointeur n)
+																															else
+																															(* Dans le cas contraire, on lève une exception indiquant que les types 
+																															sont différents *)
+																																	raise (TypeInattendu (te,t))
+																								end
 																							(* Cas où on tente de faire une affectation sur autre chose qu'une variable, impossible
 																								 sauf erreur interne *)
-																							|_ -> 
-																									failwith "erreur interne"
-																					end
-																	end
+																					|_ -> 
+																							failwith "erreur interne"
+																		end
+																	
 															(* L'objet de l'affectation est un déréférencement *)
 															|AstTds.Deref a1 ->
 																	(* Analyse de l'affectable associé au déréférencement *)
@@ -270,17 +287,18 @@ let rec analyser_type_instruction i =
 																			begin
 																					match ta with
 																					| Pointeur t -> 
+																						(* Commentaire *)
 																							(* On vérifie que le type du pointeur correspond au type de l'expression à affecter *)
-																							if (est_compatible te t) then
+																							if (est_compatible te t || est_compatible te Undefined) then
 																									(* On renvoie un AstType.Affectation avec un Deref contenant la nouvelle expression *)
 																									AstType.Affectation (AstTds.Deref na, ne)
 																							else
 																									(* Dans le cas contraire, on lève une exception indiquant que les types 
-																									sont différents *)
-																									raise (TypeInattendu (te, t))
+																									sont différents *)																									
+																									raise (TypeInattendu (te, t)) (* Pointeur nul a faire*)
 																					| _ ->
-																							(* On demande d'affecter un pointeur null, on lève donc une exception *)
-																							raise (TypeInattendu (ta, Pointeur Undefined))
+																							(* Cas impossible sauf erreur interne *)
+																							failwith "Erreur interne"
 																			end
 									
 											end

@@ -3,5 +3,5 @@ test {
         break;
     }
 
-    (int *) p = (new int);
+    (int *) boucle = (new int);
 }
