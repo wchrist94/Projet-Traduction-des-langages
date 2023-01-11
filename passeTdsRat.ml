@@ -85,14 +85,18 @@ let rec analyse_tds_expression tds e =
             begin
                 match chercherGlobalement tds n false with
                     |None ->
-                        (* Le nom de la variable dont on cherche *)
+                        (* Le nom de la variable dont on cherche l'adresse n'a pas été trouvé dans la tds, on lève une
+                           exception indiquant que l'identifiant n'a pas été déclaré *)
                         raise (IdentifiantNonDeclare n)
-                    |Some t ->
+                    |Some i ->
                         begin
-                            match (info_ast_to_info t)  with
+                            match (info_ast_to_info i)  with
                                 |InfoVar _ ->
-                                    AstTds.Adresse t
+                                    (* On renvoie un AstTds.Adresse avec l'info de la variable *)
+                                    AstTds.Adresse i
                                 |_ ->
+                                    (* Dans le cas où l'info n'est pas une InfoVar, on lève une exception
+                                    indiquant une mauvaise utilisation d'identifiant *)
                                     raise (MauvaiseUtilisationIdentifiant n)
                         end
             end
@@ -141,7 +145,6 @@ let rec analyse_tds_expression tds e =
             end
 
 
-
 (* analyse_tds_instruction : tds -> info_ast option -> AstSyntax.instruction -> AstTds.instruction *)
 (* Paramètre tds : la table des symboles courante *)
 (* Paramètre oia : None si l'instruction i est dans le bloc principal,
@@ -161,17 +164,14 @@ let rec analyse_tds_instruction tds oia i =
             (* Vérification de la bonne utilisation des identifiants dans l'expression *)
             (* et obtention de l'expression transformée *)
             let ne = analyse_tds_expression tds e in
-            (* Modif *)
+            (* Création d'un InfoVar avec l'identifiant de la variable *)
             let i = InfoVar (n, Undefined, 0, "") in
             let ia = info_to_info_ast i in
+            (* Ajout de l'info crée à la tds *)
             ajouter tds n ia;
-            begin
-                match t with
-                    | Pointeur tp -> 
-                        AstTds.Declaration ((Pointeur tp), ia, ne)
-                    | _ ->
-                        AstTds.Declaration (t, ia, ne)
-            end
+            (* On renvoie un AstTds.Declaration avec le type de la variable déclarée, l'info crée, et
+               l'expression analysée *)
+            AstTds.Declaration (t, ia, ne)
         | Some _ ->
             (* L'identifiant est trouvé dans la tds locale,
             il a donc déjà été déclaré dans le bloc courant *)
@@ -179,59 +179,93 @@ let rec analyse_tds_instruction tds oia i =
       end
     | AstSyntax.Loop (n,li) ->
         begin
+            (* Séparation des cas nommés et non nommés *)
             match n with
+                (* Gestion des boucles non nommées *)
                 |None ->
+                    (* Initialisation d'une InfoLoop avec un identifiant "vide" *)
                     let i = InfoLoop ("","","", []) in
                     let ia = info_to_info_ast i in 
+                    (* Ajout de l'InfoLoop crée à la tds et de son propre identifiant à sa liste des identifiants
+                       de boucle supérieure *)
                         ajouter tds "" ia;
                         ajouterLoop [""] ia;
                     begin
                         match oia with
                         | None -> 
+                            (* Déclaration de boucle depuis le main *)
+                            (* Analyse du bloc de la boucle non nommée *)
                             let nli = analyse_tds_bloc tds (Some ia) li in
+                            (* On renvoie un AstTds.Loop avec l'info_ast crée et le bloc analysé *)
                             AstTds.Loop (ia, nli)
                         | Some i ->
                             begin
                                 match (info_ast_to_info i) with
                                 |InfoLoop (_,_,_,lb) ->
+                                    (* Déclaration d'une boucle depuis le bloc d'une autre boucle, on récupère la liste des identifiants
+                                       des boucles supérieur à la boucle courante *)
+                                    (* Ajout de la liste récupèrée à l'InfoLoop de la boucle déclarée *)
                                     ajouterLoop lb ia;
+                                    (* Analyse des instructions de la boucle déclarée *)
                                     let nli = analyse_tds_bloc tds (Some ia) li in 
+                                        (* On renvoie un AstTds.Loop avec l'info crée et le bloc analysé *)
                                          AstTds.Loop (ia, nli)
-
+                                | InfoFun _ ->
+                                    (* Déclaration d'une boucle depuis le bloc principal d'une fonction *)
+                                    (* Analyse du bloc de la boucle déclaré et transformation en AstTds.bloc *)
+                                    let nli = analyse_tds_bloc tds (Some ia) li in 
+                                        (* On renvoie un AstTds.Loop avec l'info crée et le bloc analysé *)
+                                         AstTds.Loop (ia, nli)
                                 | _ ->
-                                    let nli = analyse_tds_bloc tds (Some ia) li in 
-                                         AstTds.Loop (ia, nli)
+                                    (* Cas impossible sauf erreur interne *)
+                                    failwith "Erreur interne : Déclaration de loop depuis une InfoVar ou une InfoConst"
                             end
-
                     end
                 |Some str ->
+                    (* Gestion des boucles nommées *)
+                    (* Création d'une InfoLoop avec l'identifiant de la loop *)
                     let i = InfoLoop(str, "", "", []) in
                     let ia = info_to_info_ast i in 
+                        (* Ajout de l'info crée à la tds et ajout de l'identifiant de la boucle à sa liste des identifiants
+                           de boucle supérieure *)
                         ajouter tds str ia;
                         ajouterLoop [str] ia;
                         begin 
                             match oia with
                                 |None ->
+                                    (* Déclaration de boucle depuis le main *)
+                                    (* On récupère l'info de la boucle que l'on vient de créer (nécessaire car analyse_tds_bloc
+                                       demande une info_ast option en paramètre) *)
                                     let nia = chercherLocalement tds str true in
-                                    let nli = analyse_tds_bloc tds nia li in 
+                                    (* Analyse du bloc de la boucle déclarée et transformation en AstTds.bloc *)
+                                    let nli = analyse_tds_bloc tds nia li in
+                                        (* On renvoie un AstTds.Loop avec l'info crée et le bloc analysé *)
                                         AstTds.Loop (ia, nli)
                                 |Some i ->
                                     begin
                                         match (info_ast_to_info i) with
                                             |InfoLoop (_,_,_,lb) ->
+                                                (* Déclaration d'une boucle nommée depuis le bloc d'une boucle, on récupère la liste
+                                                   des identifiants des boucles supérieures de la boucle courante *)
+                                                (* Ajout de la liste récupérée dans l'info de la boucle déclarée *)
                                                 ajouterLoop lb ia;
+                                                (* On récupère l'info de la boucle que l'on vient de créer (nécessaire car analyse_tds_bloc
+                                                demande une info_ast option en paramètre) *)
                                                 let nia = chercherLocalement tds str true in
-                                                let nli = analyse_tds_bloc tds nia li in 
-                                                     AstTds.Loop (ia, nli)
-
+                                                (* Analyse du bloc de la boucle déclarée et transformation en AstTds.bloc *)
+                                                let nli = analyse_tds_bloc tds nia li in
+                                                    (* On renvoie un AstTds.Loop avec l'info crée et le bloc analysé *)
+                                                    AstTds.Loop (ia, nli)
                                             | _ ->
+                                                (* On récupère l'info de la boucle que l'on vient de créer (nécessaire car analyse_tds_bloc
+                                                demande une info_ast option en paramètre) *)
                                                 let nia = chercherLocalement tds str true in
-                                                let nli = analyse_tds_bloc tds nia li in 
-                                                     AstTds.Loop (ia, nli)
+                                                (* Analyse du bloc de la boucle déclarée et transformation en AstTds.bloc *)
+                                                let nli = analyse_tds_bloc tds nia li in
+                                                    (* On renvoie un AstTds.Loop avec l'info crée et le bloc analysé *)
+                                                    AstTds.Loop (ia, nli)
                                     end
-                        end
-                        
-                    
+                        end             
         end
     | AstSyntax.Break n ->
         begin
@@ -241,26 +275,26 @@ let rec analyse_tds_instruction tds oia i =
                     (* Cas non nommé *)
                     begin
                         match oia with
-                        | None -> 
-                            (* break appelé directement dans le main on lève une exception indicant que le break a été
-                               mal placé *)
-                            raise (BreakNonNommeeMalPlace)
-                        | Some i ->
-                            begin
-                                match (info_ast_to_info i) with
-                                    |InfoLoop _->
-                                        (* break appelé depuis une InfoLoop on renvoie donc un AstTds.Break avec cette InfoLoop
-                                           (boucle de plus bas niveau) *)
-                                        AstTds.Break i
-                                    |InfoFun _ ->
-                                        (* break appelé directement depuis le bloc principal d'une fonction (InfoFun) on lève 
-                                        une exception indiquant que le break a été mal placé *)
-                                        raise (BreakNonNommeeMalPlace)
-                                    | _ ->
-                                        (* Cas Impossible sauf erreur interne *)
-                                        failwith "Erreur interne : Break non nommé appelé depuis une InfoVar ou une InfoConst"
-                                    
-                            end
+                            | None -> 
+                                (* break appelé directement dans le main on lève une exception indicant que le break a été
+                                mal placé *)
+                                raise (BreakNonNommeeMalPlace)
+                            | Some i ->
+                                begin
+                                    match (info_ast_to_info i) with
+                                        |InfoLoop _->
+                                            (* break appelé depuis une InfoLoop on renvoie donc un AstTds.Break avec cette InfoLoop
+                                            (boucle de plus bas niveau) *)
+                                            AstTds.Break i
+                                        |InfoFun _ ->
+                                            (* break appelé directement depuis le bloc principal d'une fonction (InfoFun) on lève 
+                                            une exception indiquant que le break a été mal placé *)
+                                            raise (BreakNonNommeeMalPlace)
+                                        | _ ->
+                                            (* Cas Impossible sauf erreur interne *)
+                                            failwith "Erreur interne : Break non nommé appelé depuis une InfoVar ou une InfoConst"
+                                        
+                                end
                     end
                 |Some str ->
                     (* Cas des break nommés *)
@@ -277,8 +311,8 @@ let rec analyse_tds_instruction tds oia i =
                                 begin
                                     match (info_ast_to_info i) with
                                         |InfoLoop (_,_,_, l) ->
-                                            (* Le break a été appelé depuis une InfoLoop on récuppère la liste des identifiants des 
-                                               boucle au dessus de la boucle à partir de laquelle le break a été appelé *)
+                                            (* Le break a été appelé depuis une InfoLoop on récupère la liste des identifiants des 
+                                               boucle de niveau supérieur (boucle courante comprise) *)
                                             begin
                                                 match iast with
                                                     |None ->
@@ -320,53 +354,93 @@ let rec analyse_tds_instruction tds oia i =
         end
     | AstSyntax.Continue (n) ->
         begin
+            (* Séparation des cas nommés et non nommés *)
             match n with
                 |None ->
+                    (* Gestion des continue non nommé *)
                     begin
                         match oia with
                         | None -> 
+                            (* Un continue a été appelé directement depuis le main, on lève une exception indiquant que le
+                               continue non nommé a été mal placé *)
                             raise (ContinueNonNommeMalPlace)
                         | Some i ->
                             begin
                                 match (info_ast_to_info i) with
                                     |InfoLoop _->
+                                        (* continue appelé depuis une boucle, on renvoie un AstTds.Continue avec l'InfoLoop
+                                           d'où le continue a été appelé (boucle de plus bas niveau) *)
                                         AstTds.Continue i
-                                    | _ ->
+                                    |InfoFun _ ->
+                                        (* continue appelé directement depuis le bloc principal d'une fonction, on lève une
+                                           exception en indiquant que le continue non nommé a été mal placé *)
                                         raise (ContinueNonNommeMalPlace)
-                                    
+                                    | _ ->
+                                        (* Cas impossible sauf erreur interne *)
+                                        failwith "Erreur interne : continue appelé depuis une InfoVar ou une InfoConst"
                             end
                     end
                 |Some str ->
+                    (* Gestion des continue nommés *)
+                    (* On récupère l'InfoLoop associée à l'identifiant du continue dans la tds en indiquant qu'on recherche une
+                       boucle à la fonction chercherGlobalement avec le paramètre true *)
                     let iast = chercherGlobalement tds str true in 
                     begin
                         match oia with
                             |None ->
+                                (* Un continue nommé a été appelé depuis le main, on lève une exeption indiquant que le continue
+                                   a été mal placé avec son identifiant *)
                                 raise (ContinueMalPlace str)
                             |Some i ->
                                 begin
                                     match (info_ast_to_info i) with
-                                        |InfoLoop _ ->
+                                        |InfoLoop (_,_,_,l) ->
+                                            (* Un continue a été appelé depuis une boucle, on récupère la liste des boucle de niveau
+                                               supérieur (la boucle courante comprise) *)
                                             begin
                                                 match iast with
                                                     |None ->
+                                                        (* L'identifiant associé avec le continue ne correspond à aucune boucle de la
+                                                           tds, on lève une exception indiquant que la boucle n'est pas atteignable avec
+                                                           l'identifiant de la boucle en question *)
                                                         raise (BoucleInconnue str)
                                                     |Some ia ->
+                                                        (* Une info associé à l'identifiant a été trouvée *)
                                                         begin
                                                             match (info_ast_to_info ia) with
-                                                                |InfoLoop _ ->
-                                                                    AstTds.Break ia
+                                                                |InfoLoop (id,_,_,_) ->
+                                                                    (* On vérifie que l'identifiant de la boucle qu'on souhaite remonter 
+                                                                    appartient à la liste des identifiants des boucles supérieur à la boucle
+                                                                    courante *)
+                                                                    if (List.mem id l) then
+                                                                        (* La boucle à remonter se situe bien dans la liste, on renvoie 
+                                                                           un AstTds.Continue avec l'info de cette boucle *)
+                                                                        AstTds.Continue ia
+                                                                    else
+                                                                        (* L'identifiant de la boucle n'a pas été trouvé, on lève une exception
+                                                                        indiquant que le continue a été mal placé avec l'identifiant de la
+                                                                        boucle qu'on souhaitait remonter *)
+                                                                        raise (ContinueMalPlace str)
                                                                 |_ ->
-                                                                    raise (ContinueMalPlace str)
+                                                                    failwith "Erreur interne : filtrage de chercherGlobalement incorrect"
                                                         end
                                             end
+                                        |InfoFun _ ->
+                                            (* Un continue a été appelé directement depuis le bloc principal d'une
+                                            fonction, on lève une exception indiquant que le continue a été mal
+                                            placé avec l'identifiant de la boucle qu'on souhaitait remonter *)
+                                            raise (ContinueMalPlace str)
                                         | _ ->
-                                            raise (ContinueMalPlace str)                       
+                                            failwith "Erreur interne : continue appelé depuis une InfoVar ou une InfoConst"                 
                                 end
                     end
         end
     | AstSyntax.Affectation (a,e) ->
+        (* Analyse de l'affectable qui fait l'objet de l'affectation et transformation en AstTds.affectable *)
         let na = analyser_tds_affectable tds true a in
+        (* Analyse de l'expression que l'on souhaite affecter et transformation en AstTds.expression *)
         let ne = analyse_tds_expression tds e in
+            (* On renvoie un AstTds.Affectation avec l'affectable analysé et l'expression analysée *)
             AstTds.Affectation(na, ne)
   | AstSyntax.Constante (n,v) ->
       begin
