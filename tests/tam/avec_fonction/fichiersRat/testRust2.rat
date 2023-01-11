@@ -1,0 +1,14 @@
+int b (int a) {
+    b : loop {
+        break b;
+    }
+    return a;
+}
+
+main{
+    b : loop {
+        break b;
+    }
+    int a = call b(1);
+    print a;
+}
