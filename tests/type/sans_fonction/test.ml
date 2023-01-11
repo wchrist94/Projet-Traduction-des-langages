@@ -451,12 +451,19 @@ let%test_unit "testPointeur7"=
   with
   | PasUnPointeur "x" -> ()
 
-  let%test_unit "testPointeur12"=
+  let%test_unit "testTernaire1"=
   try
-    let  _ = compiler (pathFichiersRat^"testPointeur12.Rat")
+    let  _ = compiler (pathFichiersRat^"testTernaire1.Rat")
     in raise ErreurNonDetectee 
   with
-  | PasUnPointeur "x" -> ()
+  | TypeCondTernaireInattendus (Int, Bool) -> ()
+
+  let%test_unit "testTernaire2"=
+  try
+    let  _ = compiler (pathFichiersRat^"testTernaire2.Rat")
+    in raise ErreurNonDetectee 
+  with
+  | TypeValTernaireInattendus (Bool, Int) -> ()
 
 (* Fichiers de tests de la génération de code -> doivent passer la TDS *)
 open Unix

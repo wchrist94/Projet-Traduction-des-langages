@@ -209,14 +209,6 @@ let rec analyse_tds_instruction tds oia i =
                     let ia = info_to_info_ast i in 
                         ajouter tds str ia;
                         ajouterLoop [str] ia;
-                    (*
-                        ajouterLoop str ia;
-                    let nia = chercherLocalement tds str in
-                    let nli = analyse_tds_bloc tds nia li in 
-                             AstTds.Loop (ia, nli)
-                    *)
-
-                        
                         begin 
                             match oia with
                                 |None ->
@@ -243,62 +235,87 @@ let rec analyse_tds_instruction tds oia i =
         end
     | AstSyntax.Break n ->
         begin
+            (* Séparation des cas nommés et non nommés *)
             match n with
                 |None ->
+                    (* Cas non nommé *)
                     begin
                         match oia with
                         | None -> 
+                            (* break appelé directement dans le main on lève une exception indicant que le break a été
+                               mal placé *)
                             raise (BreakNonNommeeMalPlace)
                         | Some i ->
                             begin
                                 match (info_ast_to_info i) with
                                     |InfoLoop _->
+                                        (* break appelé depuis une InfoLoop on renvoie donc un AstTds.Break avec cette InfoLoop
+                                           (boucle de plus bas niveau) *)
                                         AstTds.Break i
-                                    | _ ->
+                                    |InfoFun _ ->
+                                        (* break appelé directement depuis le bloc principal d'une fonction (InfoFun) on lève 
+                                        une exception indiquant que le break a été mal placé *)
                                         raise (BreakNonNommeeMalPlace)
+                                    | _ ->
+                                        (* Cas Impossible sauf erreur interne *)
+                                        failwith "Erreur interne : Break non nommé appelé depuis une InfoVar ou une InfoConst"
                                     
                             end
                     end
                 |Some str ->
+                    (* Cas des break nommés *)
+                    (* On récupére l'InfoLoop associé à l'identifiant de la boucle dans la tds en indiquant à la fonction
+                       chercherGlobalement qu'on cherche une boucle avec le paramètre true *)
                     let iast = chercherGlobalement tds str true in 
                     begin
                         match oia with
                             |None ->
+                                (* Break directement appelé depuis le main on lève une exception indiquant que le break est
+                                   mal placé avec le nom du break *)
                                 raise (BreakMalPlace str)
                             |Some i ->
                                 begin
                                     match (info_ast_to_info i) with
                                         |InfoLoop (_,_,_, l) ->
+                                            (* Le break a été appelé depuis une InfoLoop on récuppère la liste des identifiants des 
+                                               boucle au dessus de la boucle à partir de laquelle le break a été appelé *)
                                             begin
                                                 match iast with
                                                     |None ->
+                                                        (* Le break a été appelé pour interrompre une boucle inconnue, on lève
+                                                           une exception indiquant que le nom de la boucle qu'on tente d'interrompre
+                                                           est inconnu *)
                                                         raise (BoucleInconnue str)
                                                     |Some ia ->
+                                                        (* Une info avec l'identifiant associé au break a été retrouvé dans la tds *)
                                                         begin
                                                             match (info_ast_to_info ia) with
                                                                 |InfoLoop (str,_,_,_) ->
-                                                                    (*let infoLocale = chercherLocalement tds str in 
-                                                                        begin
-                                                                            match infoLocale with
-                                                                            | None -> 
-                                                                                raise (BreakMalPlace str)
-                                                                            | Some _ ->*)
-                                                                            if (List.mem str l) then
-                                                                                AstTds.Break ia
-                                                                            else
-                                                                                raise (BreakMalPlace str)
-                                                                        (*end*)
-                                                                    
+                                                                    (* On vérifie que le break a été appelé depuis une boucle
+                                                                       qui est dans la liste des boucles au dessus de la boucle
+                                                                       à partir de laquelle le break a été appelé *)
+                                                                    if (List.mem str l) then
+                                                                        (* La boucle à interrompre a été trouvé dans la liste, on renvoie
+                                                                        donc un AstTds.Break avec l'info de la boucle à interrompre *)
+                                                                        AstTds.Break ia
+                                                                    else
+                                                                        (* La boucle n'a pas été trouvé on lève une exception indiquant
+                                                                           que le break nommé a été mal placé avec le nom de la boucle
+                                                                           à interrompre *)
+                                                                        raise (BreakMalPlace str)
                                                                 |_ ->
-                                                                    raise (BreakMalPlace str)
+                                                                    (* Cas Impossible sauf erreur interne *)
+                                                                    failwith "Erreur interne : filtrage de chercherGlobalement incorrect"
                                                         end
                                             end
-                                        | _ ->
+                                        | InfoFun _ ->
+                                            (* Break nommé appelé directement depuis le bloc principal d'une fonction (InfoFun), on lève
+                                               une exception indiquant que le break a été mal placé avec son identifiant *)
                                             raise (BreakMalPlace str)
-                                            
-                                end
-                                
-                        
+                                        | _ ->
+                                            (* Cas Impossible sauf erreur interne *)
+                                            failwith "Erreur interne : Break nommé appelé depuis une InfoVar ou une InfoConst"                                
+                                end            
                     end
         end
     | AstSyntax.Continue (n) ->
