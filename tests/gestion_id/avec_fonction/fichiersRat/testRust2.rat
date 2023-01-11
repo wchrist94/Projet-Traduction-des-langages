@@ -1,0 +1,13 @@
+int boucle (int a) {
+    boucle : loop {
+        break boucle;
+    }
+    return a;
+}
+
+test{
+    boucle : loop {
+        break;
+    }
+    int boucle = 0;
+}

@@ -2,6 +2,5 @@ test{
     boucle : loop {
         break boucle;
     }
-
     bool boucle = false;
 }

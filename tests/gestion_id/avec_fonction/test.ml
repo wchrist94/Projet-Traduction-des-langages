@@ -192,6 +192,37 @@ let%test_unit "testRetourFonction"=
 let%test_unit "testRust1" =
   let _ = compiler (pathFichiersRat^"testRust1.rat") in ()
 
+  let%test_unit "testRust2" =
+  let _ = compiler (pathFichiersRat^"testRust2.rat") in ()
+
+let%test_unit "testRust3"=
+  try
+    let _ = compiler (pathFichiersRat^"testRust3.rat")
+    in raise ErreurNonDetectee
+  with
+  | BreakNonNommeeMalPlace -> ()
+
+  let%test_unit "testRust4"=
+  try
+    let _ = compiler (pathFichiersRat^"testRust4.rat")
+    in raise ErreurNonDetectee
+  with
+  | BreakMalPlace("boucle") -> ()
+
+  let%test_unit "testRust5"=
+  try
+    let _ = compiler (pathFichiersRat^"testRust5.rat")
+    in raise ErreurNonDetectee
+  with
+  | ContinueNonNommeMalPlace -> ()
+
+  let%test_unit "testRust6"=
+  try
+    let _ = compiler (pathFichiersRat^"testRust6.rat")
+    in raise ErreurNonDetectee
+  with
+  | ContinueMalPlace("boucle") -> ()
+
 (* Fichiers de tests de la génération de code -> doivent passer la TDS *)
 open Unix
 open Filename

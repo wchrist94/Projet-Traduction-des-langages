@@ -1,8 +1,5 @@
 Rust :
-Break main tds et code
-Continue main tds et code
-Plusieurs boucle de même nom imbriquée code et tds
-break main fonction code et tds
-
 
 boucle et variable de même nom ?
+
+IMPORTANT PAS LE DROIT D'aPPEKER une boucle LOOP

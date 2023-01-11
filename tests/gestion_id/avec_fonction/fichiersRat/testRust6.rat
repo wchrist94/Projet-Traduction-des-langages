@@ -1,0 +1,8 @@
+int boucle (int a) {
+    continue boucle;
+    return a;
+}
+
+test{
+   
+}

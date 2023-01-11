@@ -187,6 +187,20 @@ with
 let%test_unit "testRust10" =
   let _ = compiler (pathFichiersRat^"testRust10.rat") in ()
 
+  let%test_unit "testRust11" =
+  try
+    let _ = compiler (pathFichiersRat^"testRust11.rat")
+  in raise ErreurNonDetectee
+with
+| ContinueMalPlace("boucle") -> ()
+
+let%test_unit "testRust12" =
+  try
+    let _ = compiler (pathFichiersRat^"testRust12.rat")
+  in raise ErreurNonDetectee
+with
+| ContinueNonNommeMalPlace -> ()
+
 (* Fichiers de tests de la génération de code -> doivent passer la TDS *)
 open Unix
 open Filename
