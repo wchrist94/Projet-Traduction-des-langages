@@ -1,0 +1,8 @@
+main{
+    int a = 3;
+    a : loop {
+        break a;
+    }
+    int b = a;
+    print b;
+}

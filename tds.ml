@@ -48,20 +48,16 @@ let ajouter tds nom info =
 (* Recherche les informations d'un identificateur dans la tds locale *)
 (* Ne cherche que dans la tds de plus bas niveau *)
 let chercherLocalement tds nom boucle =
-  (*let tds_bis = tds in
-    Hashtbl.iter (fun ia tds_bis -> match (info_ast_to_info ia) with
-                              |InfoLoop _ -> ()
-                              |_ -> Hashtbl.add) (tds_bis);*)
     match tds with
       | Nulle -> None
-      | Courante (_,c) -> 
-      
+      | Courante (_,c) ->    
         let res = find_opt c nom in
         match res with
           |None -> 
             None
           |Some ia ->
             begin
+              (* Filtrage de la sortie en fonction de la recherche (boucle ou non) *)
               if boucle then
                 match (info_ast_to_info ia) with
                   |InfoLoop _ ->
@@ -76,7 +72,7 @@ let chercherLocalement tds nom boucle =
                     res
             end
 
-(*
+
 (* TESTS *)
 let%test _ = chercherLocalement (creerTDSMere()) "x" false = None
 let%test _ = 
@@ -184,7 +180,7 @@ let%test _ =
     ajouter tdsf "x" ix2;
     ajouter tdsf "z" iz;
     chercherLocalement tdsf "a" false = None
-*)
+
 (* Recherche les informations d'un identificateur dans la tds globale *)
 (* Si l'identificateur n'est pas présent dans la tds de plus bas niveau *)
 (* la recherche est effectuée dans sa table mère et ainsi de suite *)
@@ -213,7 +209,7 @@ let rec chercherGlobalement tds nom boucle =
           end
       end
     
-(*
+
 (* TESTS *)
 
 let%test _ = chercherGlobalement (creerTDSMere()) "x" false = None
@@ -322,7 +318,7 @@ let%test _ =
     ajouter tdsf "x" ix2;
     ajouter tdsf "z" iz;
     chercherGlobalement tdsf "a" false = None
-*)
+
 
 (* Convertie une info en une chaine de caractère - pour affichage *)
 let string_of_info info =
@@ -397,14 +393,39 @@ let getType iast =
     |InfoVar (_, t, _, _) -> t
     |_ -> failwith "Appel getType pas sur une InfoVar"
 
+let%test _ = 
+    let info = InfoVar ("x", Rat, 4 , "SB") in
+    let ia = info_to_info_ast info in
+    let t = getType ia in
+    match t with
+    | Rat -> true
+    | _ -> false
+
+
 (* Ajoute les etiquettes de début et de fin de boucle à son info si appelé sur une InfoLoop ne fait rien sinon *)
 let ajouter_etiquette db fb i =
   match !i with
     |InfoLoop (n,_,_,l) -> i:= InfoLoop (n,db,fb,l)
     | _ -> failwith "Appel ajouter_etiquette pas sur un InfoLoop"
 
+let%test _ = 
+    let info = InfoLoop ("x", "", "" , []) in
+    let ia = info_to_info_ast info in
+    ajouter_etiquette "a" "b" ia;
+    match info_ast_to_info ia with
+    | InfoLoop ("x", "a", "b" , []) -> true
+    | _ -> false
+
 (* Ajoute le nom d'une boucle à une infoLoop ne fait rien sinon *)
 let ajouterLoop str i =
   match !i with
     |InfoLoop (n,db,fb,l) -> i:= InfoLoop (n,db,fb,(List.append l str))
     | _ -> failwith "Appel ajouterLoop pas sur un InfoLoop"
+
+let%test _ = 
+    let info = InfoLoop ("x", "", "" , []) in
+    let ia = info_to_info_ast info in
+    ajouterLoop ["boucle";"boucle2"] ia;
+    match info_ast_to_info ia with
+    | InfoLoop ("x", "", "" , ["boucle";"boucle2"]) -> true
+    | _ -> false
