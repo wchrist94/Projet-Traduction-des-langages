@@ -19,5 +19,7 @@ val est_compatible_list : typ list -> typ list -> bool
 (* Renvoie la taille en mémoire qui doit prendre une variable en fonction de son type *)
 val getTaille : typ -> int 
 
-val detection_Pointeur_non_Pointeur : typ -> typ -> bool
+(* detection_non_Pointeur : typ -> bool *)
+(* Renvoie true si le type en paramètre est un Int, un Bool ou un Rat, renvoie false sinon *)
+val detection_non_Pointeur : typ -> bool
 

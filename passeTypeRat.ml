@@ -26,7 +26,7 @@ let rec analyser_type_affectable a =
 												AstTds.Ident info_ast,Int
 										| _ -> 
 												(* Cas impossible sauf erreur interne *)
-												failwith "erreur interne"
+												failwith "Erreur interne passeTypeRat : non affectable dans analyse_type_affectable"
 						end
 				|AstTds.Deref a1 -> 
 						(* Analyse de l'affectable qui fait l'objet du déréférencement *)
@@ -37,7 +37,7 @@ let rec analyser_type_affectable a =
 												(* renvoie un AstTds.Deref avec le nouvel affectable et le type du pointeur *)
 												AstTds.Deref(na),nt
 										|_ -> 
-												(* type du inattendu *)
+												(* Type inattendu *)
 												raise (TypeInattendu (t,Pointeur Undefined))
 						end
 
@@ -83,7 +83,7 @@ let rec analyser_type_expression e =
 										AstType.Adresse iast, Pointeur t
 								(* Cas impossbile sauf erreur interne *)
 								| _ ->
-										failwith "erreur interne"
+										failwith "Erreur interne passeTypeRat : & pas sur une variable"
 				end
 		|AstTds.Affectable a ->
 				(* Analyse de l'affectable *)
@@ -208,7 +208,6 @@ let rec analyser_type_expression e =
 					with _ -> raise (TypesParametresInattendus (te,ltp)))
 					(* Cas où l'info ne correspond pas à une InfoFun qui représente un cas impossible sauf erreur interne *)
 					|_ -> failwith "Erreur interne"
-					
 			end)
 
 (* analyser_type_instruction : AstTds.instruction -> AstType.instruction *)
@@ -218,7 +217,6 @@ let rec analyser_type_expression e =
 let rec analyser_type_instruction i =
 			begin
 						match i with
-									
 									|AstTds.Declaration(t, iast , e) -> 
 													(* Modfication de l'info pour y ajouter le type de la variable *)
 													modifier_type_variable t iast;
@@ -228,20 +226,31 @@ let rec analyser_type_instruction i =
 															if (est_compatible te t) then
 																	(* Renvoie un AstType.Declaration contenant l'info et la nouvelle expression *)
 																	AstType.Declaration(iast, ne)
-															(* Si le type de l'expression n'est pas conforme on renvoie une erreur indiquant le type attendu *)
-															else (* Commentaire *)
-																	if (detection_Pointeur_non_Pointeur t te) then
-																		match (info_ast_to_info iast) with
-																		| InfoVar (n,_,_,_) ->
-																				raise (PasUnPointeur n)
-																		| InfoConst (n,_) ->
-																				raise (PasUnPointeur n)
-																		| _ ->
-																				failwith "Déclaration inapproprié d'une boucle ou d'une fonction"
+															else
+																	(* On regarde si on essaie de declarer un pointeur ou une un non pointeur de la mauvaise manière *)
+																	if (detection_non_Pointeur t && not (detection_non_Pointeur te)) then
+																			(* On déclare un non pointeur de la mauvaise manière *)
+																			match (info_ast_to_info iast) with
+																					| InfoVar (n,_,_,_) ->
+																							raise (PasUnPointeur n)
+																					| InfoConst (n,_) ->
+																							raise (PasUnPointeur n)
+																					| _ ->
+																							failwith "Erreur interne : Déclaration inapproprié d'une boucle ou d'une fonction"
+																	else	if (not (detection_non_Pointeur t) && detection_non_Pointeur te ) then
+																					(* On déclare un pointeur de la mauvaise manière *)
+																					raise (MauvaiseOperationSurPointeur)
+																	else if ((est_compatible te Undefined) && (detection_non_Pointeur t)) then
+																			(* On tente de declarer un non pointeur à null, on lève une exception *)
+																			match (info_ast_to_info iast) with
+																					| InfoVar (n,_,_,_) ->
+																							raise (PasUnPointeur n)
+																					| InfoConst (n,_) ->
+																							raise (PasUnPointeur n)
+																					| _ ->
+																							failwith "Erreur interne : Déclaration inapproprié d'une boucle ou d'une fonction"
 																	else
-																		if ((est_compatible te Undefined) && (est_compatible t Int || est_compatible t Rat)) then
-																				raise (OperationInapropriee "null sur un non pointeur")
-																		else
+																			(* Type inattendu entre non pointeurs *)
 																			raise (TypeInattendu (te, t))
 									|AstTds.Affectation(a,e) -> 
 											(* Analyse de l'expression liée à l'affectation *)
@@ -256,7 +265,6 @@ let rec analyser_type_instruction i =
 																							begin
 																									match te with
 																											|Undefined ->	
-																													(* Commentaire *)
 																													(* On demande d'affecter un pointeur null à une variable, on lève donc une exception *)
 																													raise (OperationInapropriee "null sur un non pointeur")
 																											|_ ->
@@ -266,18 +274,21 @@ let rec analyser_type_instruction i =
 																															(* On renvoie un AstType.Affectation contenant l'identifiant avec la
 																															nouvelle expression *)
 																															AstType.Affectation (AstTds.Ident iast, ne)
+																													else if (detection_non_Pointeur t && not(detection_non_Pointeur te)) then		
+																															(* On affecte un Pointeur à un non pointeur on lève une exception *)						
+																															raise (PasUnPointeur n)
+																													else if (not(detection_non_Pointeur t) && detection_non_Pointeur te) then
+																															(* On tente d'affecter un non pointeur à un pointeur on lève une exception*)
+																															raise (MauvaiseOperationSurPointeur)
 																													else
-																															if (detection_Pointeur_non_Pointeur t te) then
-																																	raise (PasUnPointeur n)
-																															else
 																															(* Dans le cas contraire, on lève une exception indiquant que les types 
 																															sont différents *)
-																																	raise (TypeInattendu (te,t))
+																															raise (TypeInattendu (te,t))
 																								end
 																							(* Cas où on tente de faire une affectation sur autre chose qu'une variable, impossible
 																								 sauf erreur interne *)
 																					|_ -> 
-																							failwith "erreur interne"
+																							failwith "Erreur interne passeTypeRat : Affectation sur un non affectable"
 																		end
 																	
 															(* L'objet de l'affectation est un déréférencement *)
@@ -298,7 +309,7 @@ let rec analyser_type_instruction i =
 																									raise (TypeInattendu (te, t)) (* Pointeur nul a faire*)
 																					| _ ->
 																							(* Cas impossible sauf erreur interne *)
-																							failwith "Erreur interne"
+																							failwith "Erreur interne passeTypeRat : dereferencement avec un non pointeur"
 																			end
 									
 											end
@@ -321,7 +332,7 @@ let rec analyser_type_instruction i =
 													(* Si aucun critère précédent n'a été respecté on a une erreur interne on fait
 														 face à un type inconnu *)
 													else
-															failwith "erreur interne"
+															failwith "Erreur interne passeTypeRat : Affichage impossible"
 									|AstTds.Conditionnelle (e, b1, b2)-> 
 											(* Transformation de l'expression associée à la conditionnelle et accès à son type *)
 											let (ne, te) = analyser_type_expression e in

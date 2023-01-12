@@ -60,12 +60,19 @@ let getTaille t =
 let%test _ = getTaille Int = 1
 let%test _ = getTaille Bool = 1
 let%test _ = getTaille Rat = 2
+(* Adaptation *)
+let%test _ = getTaille Undefined = 0
+let%test _ = getTaille (Pointeur (Pointeur Int)) = 1
 
-let detection_Pointeur_non_Pointeur t te =
-  if ((est_compatible t Int || est_compatible t Bool || est_compatible t Rat) && (est_compatible te (Pointeur Rat) 
-    || est_compatible te (Pointeur Int) || est_compatible te (Pointeur Bool)))  then
+let detection_non_Pointeur t =
+  if (est_compatible t Int || est_compatible t Rat || est_compatible t Bool) then
       true
   else
     false
 
+let%test _ = detection_non_Pointeur Int = true
+let%test _ = detection_non_Pointeur Rat = true
+let%test _ = detection_non_Pointeur Bool = true
+let%test _ = detection_non_Pointeur (Pointeur (Pointeur Int)) = false
+let%test _ = detection_non_Pointeur (Pointeur Rat) = false
 

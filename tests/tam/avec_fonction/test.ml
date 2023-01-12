@@ -87,4 +87,8 @@ let%expect_test "testRust2" =
   runtam (pathFichiersRat^"testif.rat");
   [%expect{| 1 |}]
 
+let%expect_test "testRust3" =
+  runtam (pathFichiersRat^"testRust3.rat");
+  [%expect{| 6 |}]
+
 

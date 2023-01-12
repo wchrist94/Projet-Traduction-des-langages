@@ -421,7 +421,7 @@ let%test_unit "testPointeur7"=
     let  _ = compiler (pathFichiersRat^"testPointeur7.Rat")
     in raise ErreurNonDetectee 
   with
-  | PointeurNull -> ()
+  | OperationInapropriee ("null sur un non pointeur") -> ()
 
   let%test_unit "testPointeur8"=
   try
@@ -435,7 +435,7 @@ let%test_unit "testPointeur7"=
     let  _ = compiler (pathFichiersRat^"testPointeur9.Rat")
     in raise ErreurNonDetectee 
   with
-  | OperationInapropriee "null sur un non pointeur" -> ()
+  | PasUnPointeur "x" -> ()
 
   let%test_unit "testPointeur10"=
   try

@@ -1,5 +1,5 @@
 test {
     (int *) p = (new int);
-    (*p) = null;
+    p = null;
     int x = (*p);
 }

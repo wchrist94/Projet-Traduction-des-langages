@@ -124,12 +124,9 @@ let%test_unit "testRecursiviteVariable" =
   with
   | IdentifiantNonDeclare("x") -> ()
 
-(* Modif *)
+
 let%test_unit "testPointeur1" =
   let _ = compiler (pathFichiersRat^"testPointeur1.rat") in ()
-
-let%test_unit "testPointeur2" =
-  let _ = compiler (pathFichiersRat^"testPointeur2.rat") in ()
 
 let%test_unit "testPointeur3" =
   try

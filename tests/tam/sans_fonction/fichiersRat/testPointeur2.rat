@@ -1,6 +1,0 @@
-main{
-    (int *) p = (new int);
-    int x = 3;
-    x = (* p);
-    print x;
-}

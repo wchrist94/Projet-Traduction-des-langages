@@ -1,6 +1,0 @@
-Rust :
-
-boucle et variable de même nom ?
-
-IMPORTANT PAS LE DROIT D'aPPEKER une boucle LOOP
-Const y = bool ne passe pas
